@@ -1,0 +1,21 @@
+[project]
+name = "fullstack-template-backend"
+version = "1.0.0"
+requires-python = ">=3.12"
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W"]
+
+[tool.ruff.lint.per-file-ignores]
+"**/postgres_orm.py" = []
+
+# ─── Raw SQL Audit ────────────────────────────────────────────────────────
+# Any call to execute_raw MUST include a `reason` string with a ticket reference.
+# This ensures every raw SQL use has a documented audit trail.
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]

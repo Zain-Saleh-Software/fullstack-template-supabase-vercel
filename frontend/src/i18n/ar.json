@@ -1,0 +1,43 @@
+{
+  "app.name": "قالب التطبيق الكامل",
+
+  "nav.home": "الرئيسية",
+  "nav.dashboard": "لوحة التحكم",
+
+  "home.title": "مرحباً بك في قالب التطبيق الكامل",
+  "home.description": "قالب جاهز للإنتاج مع FastAPI و Supabase و React و TypeScript. مبني على هندسة MVP مع ORM مخصص.",
+  "home.goToDashboard": "انتقل إلى لوحة التحكم",
+
+  "auth.login": "تسجيل الدخول",
+  "auth.register": "إنشاء حساب",
+  "auth.logout": "تسجيل الخروج",
+  "auth.email": "البريد الإلكتروني",
+  "auth.password": "كلمة المرور",
+  "auth.noAccount": "ليس لديك حساب؟",
+  "auth.hasAccount": "لديك حساب بالفعل؟",
+  "auth.fullName": "الاسم الكامل",
+
+  "dashboard.title": "لوحة التحكم",
+  "dashboard.welcome": "مرحباً",
+  "dashboard.users": "المستخدمين",
+  "dashboard.active": "نشط",
+  "dashboard.inactive": "غير نشط",
+  "dashboard.noUsers": "لا يوجد مستخدمين.",
+
+  "footer.rights": "جميع الحقوق محفوظة.",
+  "footer.privacy": "سياسة الخصوصية",
+  "footer.terms": "شروط الخدمة",
+
+  "locale.toggle": "تغيير اللغة",
+
+  "loading": "جاري التحميل...",
+  "loading.app": "جاري تحميل التطبيق...",
+
+  "updates.available": "تحديثات جديدة متاحة.",
+  "updates.refresh": "تحديث",
+  "updates.dismiss": "تجاهل",
+
+  "error.generic": "حدث خطأ ما.",
+  "error.notFound": "الصفحة غير موجودة.",
+  "error.unauthorized": "دخول غير مصرح به."
+}

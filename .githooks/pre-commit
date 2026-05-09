@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+#
+# Pre-commit hook: blocks secrets, .env files, runs basic linting/formatting.
+#
+# Install via: make setup-hooks
+#
+
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "  Pre-commit checks running..."
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+# 1. Block .env files
+if git diff --cached --name-only | grep -q '\.env'; then
+    echo "✗ ERROR: Committing .env files is blocked by RULES.md."
+    exit 1
+fi
+
+# 2. Block secrets (basic regex check on staged files)
+# Checking for common secret patterns (AWS keys, private keys, service role keys)
+if git diff --cached -S"AKIA" -S"-----BEGIN PRIVATE KEY-----" -S"SUPABASE_SERVICE_ROLE_KEY" --pickaxe-regex --name-only | grep -q .; then
+    echo "✗ ERROR: Potential secrets detected in staged files."
+    echo "  Please remove secrets before committing. (Use .env for secrets)"
+    exit 1
+fi
+
+# 3. Backend Lint & Format (ruff)
+echo "→ Running backend formatter check..."
+cd backend
+ruff check . --quiet
+if [ $? -ne 0 ]; then
+    echo "✗ Backend lint failed. Run 'make lint' to fix."
+    exit 1
+fi
+ruff format --check . --quiet
+if [ $? -ne 0 ]; then
+    echo "✗ Backend formatting failed. Run 'make format' to fix."
+    exit 1
+fi
+cd ..
+
+# 4. Frontend Lint
+echo "→ Running frontend linter..."
+cd frontend
+npm run lint --silent 2>&1 | tail -3
+if [ $? -ne 0 ]; then
+    echo "✗ Frontend lint failed. Run 'make lint' to fix."
+    exit 1
+fi
+cd ..
+
+echo "  ✓ Pre-commit checks passed"
+exit 0

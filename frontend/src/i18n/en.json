@@ -1,0 +1,43 @@
+{
+  "app.name": "Fullstack Template",
+
+  "nav.home": "Home",
+  "nav.dashboard": "Dashboard",
+
+  "home.title": "Welcome to Fullstack Template",
+  "home.description": "A production-ready fullstack template with FastAPI, Supabase, React, and TypeScript. Built with MVP architecture and custom ORM.",
+  "home.goToDashboard": "Go to Dashboard",
+
+  "auth.login": "Sign In",
+  "auth.register": "Sign Up",
+  "auth.logout": "Sign Out",
+  "auth.email": "Email",
+  "auth.password": "Password",
+  "auth.noAccount": "Don't have an account?",
+  "auth.hasAccount": "Already have an account?",
+  "auth.fullName": "Full Name",
+
+  "dashboard.title": "Dashboard",
+  "dashboard.welcome": "Welcome",
+  "dashboard.users": "Users",
+  "dashboard.active": "Active",
+  "dashboard.inactive": "Inactive",
+  "dashboard.noUsers": "No users found.",
+
+  "footer.rights": "All rights reserved.",
+  "footer.privacy": "Privacy Policy",
+  "footer.terms": "Terms of Service",
+
+  "locale.toggle": "Switch language",
+
+  "loading": "Loading...",
+  "loading.app": "Loading application...",
+
+  "updates.available": "New updates are available.",
+  "updates.refresh": "Refresh",
+  "updates.dismiss": "Dismiss",
+
+  "error.generic": "Something went wrong.",
+  "error.notFound": "Page not found.",
+  "error.unauthorized": "Unauthorized access."
+}
