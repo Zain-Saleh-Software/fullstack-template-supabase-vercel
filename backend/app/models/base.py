@@ -1,10 +1,21 @@
 from datetime import datetime, timezone
-from typing import Any, Optional
-from pydantic import BaseModel
+from typing import Annotated, Any, Optional
+from uuid import UUID as _UUID
+
+from pydantic import BaseModel, BeforeValidator
+
+
+def _coerce_id(v: Any) -> str:
+    if isinstance(v, _UUID):
+        return str(v)
+    return v
+
+
+PyUUID = Annotated[str, BeforeValidator(_coerce_id)]
 
 
 class AppBaseModel(BaseModel):
-    id: str
+    id: PyUUID
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 

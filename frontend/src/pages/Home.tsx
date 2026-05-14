@@ -8,8 +8,8 @@ export function Home() {
 
     return (
         <div className="flex min-h-[60vh] flex-col items-center justify-center text-center">
-            <h1 className="mb-4 text-4xl font-bold text-gray-900 sm:text-5xl">{t('home.title')}</h1>
-            <p className="mb-8 max-w-2xl text-lg text-gray-600">{t('home.description')}</p>
+            <h1 className="mb-4 text-4xl font-bold text-gray-900 dark:text-white sm:text-5xl">{t('home.title')}</h1>
+            <p className="mb-8 max-w-2xl text-lg text-gray-600 dark:text-gray-400">{t('home.description')}</p>
             <div className="flex items-center gap-4">
                 {isAuthenticated ? (
                     <Link
@@ -22,13 +22,13 @@ export function Home() {
                     <>
                         <Link
                             to="/login"
-                            className="rounded-md bg-blue-500 px-6 py-3 text-lg font-medium text-white hover:bg-blue-600"
+                            className="rounded-md bg-blue-500 px-6 py-3 text-lg font-medium text-white hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700"
                         >
                             {t('auth.login')}
                         </Link>
                         <Link
                             to="/register"
-                            className="rounded-md border border-gray-300 px-6 py-3 text-lg font-medium text-gray-700 hover:bg-gray-50"
+                            className="rounded-md border border-gray-300 px-6 py-3 text-lg font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800"
                         >
                             {t('auth.register')}
                         </Link>

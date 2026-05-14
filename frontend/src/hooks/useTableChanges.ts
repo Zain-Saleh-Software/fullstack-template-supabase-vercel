@@ -3,6 +3,18 @@ import { changesApi } from '@/api/changes'
 
 const POLL_INTERVAL = 5000
 
+let _acknowledgeChanges: (() => void) | null = null
+
+export function setAcknowledgeChanges(fn: (() => void) | null) {
+    _acknowledgeChanges = fn
+}
+
+export function acknowledgeUserChanges() {
+    if (_acknowledgeChanges) {
+        _acknowledgeChanges()
+    }
+}
+
 export function useTableChanges() {
     const [hasChanges, setHasChanges] = useState(false)
     const [lastTables, setLastTables] = useState<string[]>([])
@@ -35,6 +47,11 @@ export function useTableChanges() {
         setHasChanges(false)
         setLastTables([])
     }, [])
+
+    useEffect(() => {
+        setAcknowledgeChanges(acknowledgeChanges)
+        return () => setAcknowledgeChanges(null)
+    }, [acknowledgeChanges])
 
     const refresh = useCallback(() => {
         window.location.reload()

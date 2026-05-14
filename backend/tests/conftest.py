@@ -5,8 +5,8 @@ Usage:
     pytest tests/ -v --cov=app --cov-report=term-missing
 """
 
-from typing import AsyncGenerator, Generator
-from unittest.mock import AsyncMock, MagicMock, patch
+from typing import AsyncGenerator
+from unittest.mock import AsyncMock, patch
 
 import pytest
 from fastapi import FastAPI
@@ -18,10 +18,10 @@ from app.orm.base import BaseORM
 from app.orm.query import QueryBuilder
 
 
-# ─── Database Context ────────────────────────────────────────────────────
+# ─── Mock ORM — full in-memory implementation ─────────────────────────────
 
 class MockORM(BaseORM):
-    """In-memory mock ORM for testing."""
+    """In-memory mock ORM supporting ALL QueryBuilder filter operators."""
 
     def __init__(self):
         self._stores: dict[str, dict[str, object]] = {}
@@ -31,6 +31,36 @@ class MockORM(BaseORM):
             self._stores[table] = {}
         return self._stores[table]
 
+    def _apply_filters(self, items: list, builder: QueryBuilder) -> list:
+        for op, col, val in builder.filters:
+            if op == "eq":
+                items = [i for i in items if getattr(i, col, None) == val]
+            elif op == "neq":
+                items = [i for i in items if getattr(i, col, None) != val]
+            elif op == "gt":
+                items = [i for i in items if (getattr(i, col, None) or 0) > val]
+            elif op == "gte":
+                items = [i for i in items if (getattr(i, col, None) or 0) >= val]
+            elif op == "lt":
+                items = [i for i in items if (getattr(i, col, None) or 0) < val]
+            elif op == "lte":
+                items = [i for i in items if (getattr(i, col, None) or 0) <= val]
+            elif op == "like":
+                pattern = str(val).replace("%", ".*")
+                import re
+                items = [i for i in items if re.match(pattern, str(getattr(i, col, "")), re.IGNORECASE)]
+            elif op == "ilike":
+                pattern = str(val).replace("%", ".*")
+                import re
+                items = [i for i in items if re.match(pattern, str(getattr(i, col, "")), re.IGNORECASE)]
+            elif op == "in_":
+                items = [i for i in items if getattr(i, col, None) in (val or [])]
+            elif op == "is_null":
+                items = [i for i in items if getattr(i, col, None) is None]
+            elif op == "is_not_null":
+                items = [i for i in items if getattr(i, col, None) is not None]
+        return items
+
     async def find_all(self, model_class):
         table = model_class._table()
         return list(self._store(table).values())
@@ -39,13 +69,16 @@ class MockORM(BaseORM):
         table = model_class._table()
         return self._store(table).get(id)
 
-    async def find_by(self, model_class, builder: QueryBuilder):
+    async def find_by(self, model_class, builder: QueryBuilder, limit: int = 100, offset: int = 0):
         table = builder.table
         items = list(self._store(table).values())
-        for op, col, val in builder.filters:
-            if op == "eq":
-                items = [i for i in items if getattr(i, col, None) == val]
-        return items
+        items = self._apply_filters(items, builder)
+
+        if builder.sorts:
+            for col, direction in builder.sorts:
+                items.sort(key=lambda i, c=col: (getattr(i, c, None) or ""), reverse=(direction == "desc"))
+
+        return items[offset:offset + limit]
 
     async def find_one_by(self, model_class, builder: QueryBuilder):
         results = await self.find_by(model_class, builder)
@@ -53,6 +86,9 @@ class MockORM(BaseORM):
 
     async def create(self, model_class, data: dict):
         table = model_class._table()
+        if "id" not in data:
+            import uuid
+            data["id"] = str(uuid.uuid4())
         obj = model_class(**data)
         self._store(table)[obj.id] = obj
         return obj
@@ -69,6 +105,8 @@ class MockORM(BaseORM):
         return obj
 
     async def update_by(self, model_class, builder: QueryBuilder, data: dict):
+        if not builder.filters:
+            raise ValueError("update_by requires at least one filter")
         items = await self.find_by(model_class, builder)
         for item in items:
             for k, v in data.items():
@@ -80,17 +118,25 @@ class MockORM(BaseORM):
         return self._store(table).pop(id, None) is not None
 
     async def delete_by(self, model_class, builder: QueryBuilder) -> bool:
+        if not builder.filters:
+            raise ValueError("delete_by requires at least one filter")
         items = await self.find_by(model_class, builder)
         for item in items:
             await self.delete(model_class, item.id)
         return len(items) > 0
 
-    async def count(self, model_class) -> int:
+    async def count(self, model_class, builder: QueryBuilder = None) -> int:
+        if builder is not None:
+            items = await self.find_by(model_class, builder)
+            return len(items)
         table = model_class._table()
         return len(self._store(table))
 
     async def execute_raw(self, query: str, params=None, reason="") -> list[dict]:
         return []
+
+    def query(self, model_class) -> QueryBuilder:
+        return QueryBuilder(model_class._table())
 
     async def close(self):
         self._stores.clear()
@@ -104,6 +150,18 @@ def mock_orm():
         with patch("app.orm.supabase_orm.supabase_orm", mock):
             with patch("app.services.auth_service.get_orm", return_value=mock):
                 yield mock
+
+
+@pytest.fixture(autouse=True)
+def mock_token_blacklist():
+    """Mock token_blacklist to avoid Redis dependency in tests."""
+    with patch("app.services.auth_service.token_blacklist") as mock:
+        mock.record_failed_attempt = AsyncMock()
+        mock.get_failed_attempts = AsyncMock(return_value=0)
+        mock.lock_account = AsyncMock()
+        mock.is_account_locked = AsyncMock(return_value=False)
+        mock.clear_failed_attempts = AsyncMock()
+        yield mock
 
 
 @pytest.fixture
@@ -124,7 +182,7 @@ async def client(app: FastAPI) -> AsyncGenerator[AsyncClient, None]:
 def user_payload() -> dict:
     return {
         "email": "test@example.com",
-        "password": "TestPass123!",
+        "password": "LongSecurePassword123!",
         "full_name": "Test User",
     }
 
@@ -136,7 +194,7 @@ def admin_user(mock_orm, user_payload) -> User:
     user = User(
         id=str(uuid.uuid4()),
         email="admin@example.com",
-        hashed_password=hash_password("AdminPass123!"),
+        hashed_password=hash_password("AdminLongSecurePass123!"),
         full_name="Admin User",
         role="admin",
         is_active=True,
@@ -153,7 +211,7 @@ def customer_user(mock_orm) -> User:
     user = User(
         id=str(uuid.uuid4()),
         email="customer@example.com",
-        hashed_password=hash_password("CustomerPass123!"),
+        hashed_password=hash_password("CustomerLongPass456!"),
         full_name="Customer User",
         role="customer",
         is_active=True,
@@ -170,7 +228,7 @@ def auth_headers(admin_user) -> dict:
 
 
 @pytest.fixture
-def customer_auth_headers(customer_user) -> dict:
+def customer_auth_headers(customer_user) -> bool:
     from app.core.security import create_access_token
     token = create_access_token(data={"sub": customer_user.id})
     return {"Authorization": f"Bearer {token}"}

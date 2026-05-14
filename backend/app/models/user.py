@@ -1,9 +1,11 @@
-from typing import Optional
-from pydantic import BaseModel
+from typing import Optional, Any
+from pydantic import BaseModel, field_validator
 from datetime import datetime
 
 
 class User(BaseModel):
+    model_config = {"coerce_numbers_to_str": True}
+
     id: str
     email: str
     hashed_password: str

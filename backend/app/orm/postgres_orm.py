@@ -1,5 +1,6 @@
 import asyncio
 import json
+import uuid
 from typing import Any, Optional
 
 import asyncpg
@@ -15,6 +16,9 @@ VALID_COLUMNS: dict[str, set[str]] = {
     "roles": {"id", "name", "description", "is_system", "created_at", "updated_at"},
     "permissions": {"id", "role_id", "action", "resource", "created_at"},
     "table_changes": {"id", "table_name", "operation", "changed_at"},
+    "accounts": {"id", "name", "account_type", "status", "owner_id", "is_deleted", "deleted_at", "created_at", "updated_at"},
+    "contacts": {"id", "account_id", "first_name", "last_name", "email", "phone", "job_title", "is_primary", "owner_id", "is_deleted", "deleted_at", "created_at", "updated_at"},
+    "password_reset_tokens": {"id", "user_id", "hashed_token", "expires_at", "used_at", "created_at"},
 }
 
 
@@ -64,13 +68,26 @@ class PostgresORM(BaseORM):
             raise last_exception or RuntimeError("Failed to create database pool")
         return self._pool
 
+    @staticmethod
+    def _convert_row(row: asyncpg.Record) -> dict:
+        data = dict(row)
+        for key, value in data.items():
+            if isinstance(value, uuid.UUID):
+                data[key] = str(value)
+            elif isinstance(value, str):
+                try:
+                    data[key] = json.loads(value)
+                except (json.JSONDecodeError, TypeError):
+                    pass
+        return data
+
     async def _row_to_model(self, model_class: type[T], row: Optional[asyncpg.Record]) -> Optional[T]:
         if row is None:
             return None
-        return model_class(**dict(row))
+        return model_class(**self._convert_row(row))
 
     async def _rows_to_models(self, model_class: type[T], rows: list[asyncpg.Record]) -> list[T]:
-        return [model_class(**dict(row)) for row in rows]
+        return [model_class(**self._convert_row(row)) for row in rows]
 
     @observe_db("select", "dynamic")
     @async_trace("orm.postgres.find_all")
@@ -183,7 +200,7 @@ class PostgresORM(BaseORM):
         table = model_class._table()
         columns = list(data.keys())
         validate_columns(table, columns)
-        values = list(data.values())
+        values = [json.dumps(v) if isinstance(v, (dict, list)) else v for v in data.values()]
         placeholders = ', '.join([f'${i+1}' for i in range(len(values))])
         columns_str = ', '.join([f'"{c}"' for c in columns])
 
@@ -209,7 +226,7 @@ class PostgresORM(BaseORM):
         placeholders_list = []
         idx = 1
         for data in data_list:
-            vals = [data[c] for c in columns]
+            vals = [json.dumps(data[c]) if isinstance(data[c], (dict, list)) else data[c] for c in columns]
             all_values.extend(vals)
             ph = ', '.join([f'${idx + i}' for i in range(len(vals))])
             placeholders_list.append(f'({ph})')
@@ -229,8 +246,8 @@ class PostgresORM(BaseORM):
         pool = await self._get_pool()
         table = model_class._table()
         validate_columns(table, list(data.keys()))
+        values = [json.dumps(v) if isinstance(v, (dict, list)) else v for v in data.values()]
         set_clause = ', '.join([f'"{k}" = ${i+1}' for i, k in enumerate(data.keys())])
-        values = list(data.values())
         values.append(id)
 
         async with pool.acquire() as conn:
@@ -249,8 +266,8 @@ class PostgresORM(BaseORM):
         table = builder.table
         validate_columns(table, list(data.keys()))
         validate_builder_filters(table, builder.filters)
+        values = [json.dumps(v) if isinstance(v, (dict, list)) else v for v in data.values()]
         set_clause = ', '.join([f'"{k}" = ${i+1}' for i, k in enumerate(data.keys())])
-        values = list(data.values())
         conditions = []
         param_idx = len(values) + 1
 
@@ -440,7 +457,10 @@ class PostgresORM(BaseORM):
         pool = await self._get_pool()
         async with pool.acquire() as conn:
             if params:
-                rows = await conn.fetch(query, *params.values())
+                if isinstance(params, dict):
+                    rows = await conn.fetch(query, *params.values())
+                else:
+                    rows = await conn.fetch(query, *params)
             else:
                 rows = await conn.fetch(query)
             return [dict(row) for row in rows]

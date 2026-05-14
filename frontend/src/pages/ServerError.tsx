@@ -6,14 +6,17 @@ export function ServerError() {
     return (
         <div className="flex min-h-[60vh] items-center justify-center">
             <div className="text-center">
-                <h1 className="mb-4 text-6xl font-bold text-gray-300">500</h1>
-                <h2 className="mb-2 text-2xl font-semibold text-gray-900">
+                <h1 className="mb-4 text-6xl font-bold text-gray-300 dark:text-gray-600">500</h1>
+                <h2 className="mb-2 text-2xl font-semibold text-gray-900 dark:text-white">
                     {t('errors.serverError') || 'Server Error'}
                 </h2>
-                <p className="mb-6 text-gray-600">
+                <p className="mb-6 text-gray-600 dark:text-gray-400">
                     {t('errors.serverErrorMessage') || 'Something went wrong on our end. Please try again later.'}
                 </p>
-                <Link to="/" className="rounded-md bg-blue-500 px-4 py-2 text-white hover:bg-blue-600">
+                <Link
+                    to="/"
+                    className="rounded-md bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700"
+                >
                     {t('errors.goHome') || 'Go Home'}
                 </Link>
             </div>

@@ -21,14 +21,14 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
             <button
                 onClick={() => onPageChange(currentPage - 1)}
                 disabled={currentPage <= 1}
-                className="rounded-md border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+                className="rounded-md border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800"
                 aria-label="Previous page"
             >
                 &laquo; Prev
             </button>
             {pages.map((page, i) =>
                 page === '...' ? (
-                    <span key={`ellipsis-${i}`} className="px-2 text-gray-400">
+                    <span key={`ellipsis-${i}`} className="px-2 text-gray-400 dark:text-gray-500">
                         ...
                     </span>
                 ) : (
@@ -37,8 +37,8 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
                         onClick={() => onPageChange(page)}
                         className={`rounded-md border px-3 py-1.5 text-sm ${
                             page === currentPage
-                                ? 'border-blue-500 bg-blue-500 text-white'
-                                : 'border-gray-300 hover:bg-gray-50'
+                                ? 'border-blue-500 bg-blue-500 text-white dark:border-blue-600 dark:bg-blue-600'
+                                : 'border-gray-300 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800'
                         }`}
                         aria-current={page === currentPage ? 'page' : undefined}
                     >
@@ -49,7 +49,7 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
             <button
                 onClick={() => onPageChange(currentPage + 1)}
                 disabled={currentPage >= totalPages}
-                className="rounded-md border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+                className="rounded-md border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800"
                 aria-label="Next page"
             >
                 Next &raquo;

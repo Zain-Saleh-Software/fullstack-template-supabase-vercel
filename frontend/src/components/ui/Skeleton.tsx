@@ -3,12 +3,18 @@ interface SkeletonProps {
 }
 
 export function Skeleton({ className = '' }: SkeletonProps) {
-    return <div className={`animate-pulse rounded bg-gray-200 ${className}`} role="status" aria-label="Loading" />
+    return (
+        <div
+            className={`animate-pulse rounded bg-gray-200 dark:bg-gray-700 ${className}`}
+            role="status"
+            aria-label="Loading"
+        />
+    )
 }
 
 export function SkeletonTable({ rows = 5, cols = 3 }: { rows?: number; cols?: number }) {
     return (
-        <div className="divide-y divide-gray-200">
+        <div className="divide-y divide-gray-200 dark:divide-gray-700">
             {Array.from({ length: rows }).map((_, i) => (
                 <div key={i} className="flex items-center gap-4 px-6 py-4">
                     {Array.from({ length: cols }).map((_, j) => (
@@ -22,7 +28,7 @@ export function SkeletonTable({ rows = 5, cols = 3 }: { rows?: number; cols?: nu
 
 export function SkeletonCard() {
     return (
-        <div className="space-y-4 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+        <div className="space-y-4 rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
             <Skeleton className="h-6 w-1/3" />
             <Skeleton className="h-4 w-full" />
             <Skeleton className="h-4 w-2/3" />

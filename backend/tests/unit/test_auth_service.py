@@ -21,7 +21,7 @@ class TestAuthService:
         assert exc.value.status_code == 422
 
     async def test_register_success(self, mock_orm):
-        request = MockRequest(email="new@test.com", password="StrongPass1!", full_name="New User")
+        request = MockRequest(email="new@test.com", password="V3ryStr0ngP@ssw0rd!", full_name="New User")
         result = await auth_service.register(request)
         assert "access_token" in result
         assert "refresh_token" in result

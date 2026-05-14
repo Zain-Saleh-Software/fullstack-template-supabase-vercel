@@ -16,9 +16,8 @@ class Settings(BaseSettings):
     backend_cors_origins: str = "http://localhost:5173"
 
     # ─── Database ────────────────────────────────────────────────────────
-    db_type: str = "supabase"
+    db_type: str = "postgres"
     database_url: str = "postgresql://postgres:password@localhost:5432/postgres"
-
     supabase_url: str = ""
     supabase_anon_key: str = ""
     supabase_service_role_key: str = ""
@@ -35,6 +34,10 @@ class Settings(BaseSettings):
     jwt_private_key: Optional[str] = None
     jwt_public_key: Optional[str] = None
 
+    # ─── Password Reset ──────────────────────────────────────────────────
+    password_reset_base_url: str = "http://localhost:5173/reset-password"
+    password_reset_token_expire_minutes: int = 60
+
     # ─── Pool ─────────────────────────────────────────────────────────────
     db_pool_min_size: int = 2
     db_pool_max_size: int = 10
@@ -47,10 +50,8 @@ class Settings(BaseSettings):
     sentry_dsn: Optional[str] = None
 
     # ─── Observability ───────────────────────────────────────────────────
-    otel_endpoint: Optional[str] = None
     log_level: str = "INFO"
     enable_metrics: bool = True
-    enable_tracing: bool = True
 
     @property
     def cors_origins_list(self) -> List[str]:

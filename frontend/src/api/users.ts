@@ -11,4 +11,8 @@ export const usersApi = {
         const response = await api.get<User>(`/users/${id}`)
         return response.data
     },
+
+    delete: async (id: string): Promise<void> => {
+        await api.delete(`/users/${id}`)
+    },
 }

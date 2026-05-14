@@ -21,7 +21,7 @@
 #   make db-migrate    - Run database migrations
 # =============================================================================
 
-.PHONY: help install dev build start stop restart test lint format clean
+.PHONY: help install dev build start start-dev stop stop-dev restart test lint format clean
 
 # ─── Colors ───────────────────────────────────────────────────────────────────
 BLUE := \033[1;34m
@@ -48,8 +48,7 @@ install: install-backend install-frontend  ## Install all dependencies
 
 install-backend:  ## Install backend dependencies
 	@echo "$(BLUE)→ Installing backend dependencies...$(RESET)"
-	cd backend && python -m venv .venv && \
-		python -m pip install -r requirements.txt
+	python -m pip install -r backend/requirements.txt
 
 install-frontend:  ## Install frontend dependencies
 	@echo "$(BLUE)→ Installing frontend dependencies...$(RESET)"
@@ -61,7 +60,7 @@ dev: dev-backend dev-frontend  ## Run in development mode
 
 dev-backend:  ## Run backend in development mode
 	@echo "$(BLUE)→ Starting backend...$(RESET)"
-	cd backend && uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+	cd backend && python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
 dev-frontend:  ## Run frontend in development mode
 	@echo "$(BLUE)→ Starting frontend...$(RESET)"
@@ -73,7 +72,7 @@ build: build-backend build-frontend  ## Build for production
 
 build-backend:  ## Build backend
 	@echo "$(BLUE)→ Building backend...$(RESET)"
-	cd backend && pip install -r requirements.txt -t dist
+	cd backend && python -m pip install -r requirements.txt -t dist
 
 build-frontend:  ## Build frontend
 	@echo "$(BLUE)→ Building frontend...$(RESET)"
@@ -85,6 +84,10 @@ start:  ## Start production services with Docker
 	@echo "$(BLUE)→ Starting production services...$(RESET)"
 	docker-compose -f docker-compose.yml up -d
 
+start-dev:  ## Start development services with Docker (auto-reload on changes)
+	@echo "$(BLUE)→ Starting development services...$(RESET)"
+	docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+
 start-prod:  ## Start production services with full stack (nginx + SSL)
 	@echo "$(BLUE)→ Starting full production stack...$(RESET)"
 	docker compose -f deploy/docker-compose.prod.yml up -d
@@ -93,10 +96,20 @@ stop:  ## Stop production services
 	@echo "$(BLUE)→ Stopping production services...$(RESET)"
 	docker-compose -f docker-compose.yml down
 
+stop-dev:  ## Stop development services
+	@echo "$(BLUE)→ Stopping development services...$(RESET)"
+	docker-compose -f docker-compose.yml -f docker-compose.dev.yml down
+
 restart: stop start  ## Restart production services
 
 logs:  ## View production logs
 	docker-compose -f docker-compose.yml logs -f
+
+# ─── Rules Validation ─────────────────────────────────────────────────────────
+
+validate-rules:  ## Validate template rules integrity
+	@echo "$(BLUE)→ Validating rules integrity...$(RESET)"
+	@bash scripts/validate-rules.sh
 
 # ─── Testing ───────────────────────────────────────────────────────────────────
 

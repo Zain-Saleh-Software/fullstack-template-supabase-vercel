@@ -17,7 +17,7 @@ export function UpdateBanner() {
 
     return (
         <div
-            className="fixed left-0 right-0 top-0 z-50 animate-slide-down bg-blue-600 text-white shadow-lg"
+            className="fixed left-0 right-0 top-0 z-50 animate-slide-down bg-blue-600 text-white shadow-lg dark:bg-blue-700"
             role="alert"
             aria-live="polite"
         >
@@ -44,7 +44,7 @@ export function UpdateBanner() {
                         onClick={() => {
                             refresh()
                         }}
-                        className="inline-flex items-center gap-1.5 rounded-md bg-white px-3 py-1.5 text-xs font-semibold text-blue-700 transition-colors hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-blue-600"
+                        className="inline-flex items-center gap-1.5 rounded-md bg-white px-3 py-1.5 text-xs font-semibold text-blue-700 transition-colors hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-blue-600 dark:bg-gray-100 dark:text-blue-800 dark:hover:bg-gray-200"
                         aria-label={t('updates.refresh')}
                     >
                         <svg

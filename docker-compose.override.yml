@@ -9,10 +9,13 @@ services:
   frontend:
     environment:
       - NODE_ENV=development
+      - VITE_API_BASE_URL=/api/v1
+      - VITE_PROXY_TARGET=http://host.docker.internal:${BACKEND_PORT:-8000}
+      - VITE_HMR_CLIENT_PORT=${FRONTEND_PORT:-80}
     volumes:
       - ./frontend:/app
       - /app/node_modules
-    command: npm run dev
+    command: sh -c "rm -rf /app/node_modules/.vite && npm run dev"
 
   redis:
     volumes:

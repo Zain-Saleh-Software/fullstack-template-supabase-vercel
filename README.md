@@ -68,7 +68,7 @@ A production-ready fullstack template with **MVP architecture**, **custom ORM**,
 - **Vercel** + **Render** deployment configs
 
 ## 🤖 Using AI to Bootstrap a Project?
-If you are using an AI agent to build a project from this template, immediately direct it to read **[AI_INIT_PROJECT.md](./AI_INIT_PROJECT.md)**. This guide explicitly tells the AI what code is structural (do not touch) and what is demonstrational (modify/remove), ensuring a perfect, error-free start to your new project.
+If you are using an AI agent to build a project from this template, immediately direct it to read **[skills/ai-init-project.md](./skills/ai-init-project.md)**. This guide explicitly tells the AI what code is structural (do not touch) and what is demonstrational (modify/remove), ensuring a perfect, error-free start to your new project.
 
 ## Quick Start
 

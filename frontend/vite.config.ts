@@ -4,6 +4,11 @@ import react from '@vitejs/plugin-react'
 import path from 'path'
 import { visualizer } from 'rollup-plugin-visualizer'
 
+const proxyTarget =
+  process.env.VITE_PROXY_TARGET ||
+  process.env.VITE_API_BASE_URL?.replace(/\/api\/v1\/?$/, '') ||
+  'http://localhost:8000'
+
 export default defineConfig({
   plugins: [
     react(),
@@ -20,10 +25,12 @@ export default defineConfig({
   },
   server: {
     port: 5173,
+    hmr: {
+      clientPort: Number(process.env.VITE_HMR_CLIENT_PORT) || 5173,
+    },
     proxy: {
       '/api': {
-        target: process.env.VITE_API_BASE_URL || 'http://localhost:8000',
-        changeOrigin: true,
+        target: proxyTarget,
       },
     },
   },

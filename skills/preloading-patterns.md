@@ -1,112 +1,68 @@
-# Data Fetching & Caching Patterns
+# Data Fetching, Preloading & Change Detection
 
-> **MANDATORY:** ALL rules in `RULES.md` apply. This skill supplements, never overrides, `RULES.md`.
-> Every PR, commit, and deployment MUST comply with `RULES.md`. Deviations require an ADR.
+> **Source of Truth:** This skill defines ALL data fetching, caching, preloading, and change detection rules for the template.
+> **Compliance:** Mandatory for every PR, commit, and deployment.
+> **Deviation:** Requires an Architecture Decision Record (ADR).
+
+---
 
 ## IMPORTANT: Custom PreloaderContext is DEPRECATED
 
-The custom `PreloaderContext` has been **replaced by `@tanstack/react-query`** per RULES.md section 16.2.
-
-**Reason:** The custom preloader had:
-- Race conditions on concurrent loads
-- Infinite re-fetch bugs (inline `fetcher` in dependency arrays)
-- `forceUpdate` anti-pattern (counter state)
-- No caching strategy, no deduplication, no retry logic
-- Used only in one place (Dashboard) — significant complexity for no benefit
+The custom `PreloaderContext` has been **replaced by `@tanstack/react-query`**.
 
 **All new code MUST use `@tanstack/react-query`. Do NOT use `PreloaderContext` or `usePreloader`.**
 
-## How It Works (React Query)
+---
 
-React Query provides:
-- Automatic caching with configurable `staleTime`
-- Request deduplication (concurrent same-key requests share one fetch)
-- Automatic retry with exponential backoff
-- Background refetching (refetchOnWindowFocus, refetchOnReconnect)
-- Optimistic updates for mutations
-- Cache invalidation on mutations
+## 7.1 React Query Rules
 
-## Usage
+- `PreloaderContext` / `usePreloader` is **DEPRECATED** — all new code MUST use `@tanstack/react-query`.
+- `QueryClient` MUST be configured with: `retry: 1`, `refetchOnWindowFocus: false`, default `staleTime: 30000` (30s).
+- **Query Keys MUST follow:** `['entityName']` for lists, `['entityName', id]` for single items, `['entityName', { filters }]` for filtered queries. Pagination state MUST be in the query key.
+- **staleTime MUST be configured per query:** user data (30s–5min), reference data (30min), real-time data (0).
+- **Cache Invalidation:** MUST happen on mutations via `queryClient.invalidateQueries({ queryKey: ['entityName'] })`.
+- **Optimistic Updates:** MUST be used for mutations affecting the current user's visible data. Rollback on error.
+- **Error States:** EVERY query MUST handle: `isLoading`, `isError`, `error`, `data` (empty + populated).
+- **Pagination:** Query key MUST include page/offset so React Query auto-refetches on change.
+- **Permission-Aware Fetching:** Components MUST NOT fetch data the current user cannot access. Use the `enabled` option in `useQuery` to conditionally skip queries based on the user's role/permission.
 
-### Setting up QueryClient (in App.tsx or main.tsx)
+---
+
+## 7.2 Data Fetching Pattern
+
 ```tsx
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 5 * 60 * 1000,       // 5 min default stale time
-      retry: 3,                         // retry 3 times on failure
-      retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10000),  // exponential backoff
-      refetchOnWindowFocus: true,       // refetch when user returns to tab
-      refetchOnReconnect: true,         // refetch on network recovery
-    },
-  },
+// Query (GET)
+const { data, isLoading, error, refetch } = useQuery({
+  queryKey: ['entity', { filters }],
+  queryFn: () => api.list(filters),
+  staleTime: 5 * 60 * 1000,
 })
 
-export default function App() {
-  return (
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        ...
-      </BrowserRouter>
-    </QueryClientProvider>
-  )
-}
+// Mutation (POST/PATCH/DELETE)
+const mutation = useMutation({
+  mutationFn: (data) => api.create(data),
+  onSuccess: () => queryClient.invalidateQueries({ queryKey: ['entity'] }),
+  onError: (err) => handleError(err),
+})
 ```
 
-### Fetching data in components (replaces usePreload)
-```tsx
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { usersApi } from '@/api/users'
+---
 
-function UsersPage() {
-  const queryClient = useQueryClient()
+## 5.7 Global Preloading Pattern
 
-  // Auto-fetches, caches, deduplicates, retries
-  const { data: users, isLoading, error, refetch } = useQuery({
-    queryKey: ['users'],
-    queryFn: () => usersApi.list(),
-    staleTime: 5 * 60 * 1000,   // 5 min
-  })
+### Purpose
+On initial app load, preload ALL essential data (up to 100 items per resource) into React Query cache behind a full-screen loading spinner. This eliminates per-page loading skeletons and ensures the app feels instantly responsive after the initial load.
 
-  // Mutation with automatic cache invalidation
-  const createUser = useMutation({
-    mutationFn: (data) => usersApi.create(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['users'] })  // Refetch users list
-    },
-  })
+### Component
+`AppPreloader` in `components/AppPreloader.tsx` — wraps the app tree inside `QueryProvider`. Uses `useQueryClient.prefetchQuery()` with `Promise.allSettled` to preload all queries in parallel. Shows a centered spinning indicator with `role="status"` until all prefetches settle.
 
-  if (isLoading) return <Loading />
-  if (error) return <Error message={error.message} />
-  return <UserList users={users} />
-}
-```
-
-### Preloading data eagerly (on app startup or navigation)
-```tsx
-import { useQueryClient } from '@tanstack/react-query'
-import { usersApi } from '@/api/users'
-
-function AppContent() {
-  const queryClient = useQueryClient()
-
-  useEffect(() => {
-    // Prefetch users so they're in cache when the component mounts
-    queryClient.prefetchQuery({
-      queryKey: ['users'],
-      queryFn: () => usersApi.list(),
-      staleTime: 5 * 60 * 1000,
-    })
-  }, [])
-
-  return <Router />
-}
-```
-
-### Global Preloading with AppPreloader (limit=100)
-A full-screen loading spinner that preloads ALL essential data before the app renders.
+### Rules
+- MUST be placed inside `QueryProvider` (needs `queryClient`)
+- MUST limit every preload query to 100 items
+- MUST use `Promise.allSettled` (fail-soft — app loads even if some preloads fail)
+- MUST show a centered spinner with `role="status"` and `aria-label`
+- MUST use `staleTime: 30_000` to avoid immediate refetches after spinner hides
+- Currently preloads `users.list` and `events.list`. Add new preloads as the app grows.
 
 ```tsx
 // components/AppPreloader.tsx
@@ -146,69 +102,27 @@ export function AppPreloader({ children }) {
 }
 ```
 
-**Rules:**
-- MUST be placed inside `QueryProvider` (needs `queryClient`)
-- MUST limit every preload query to 100 items
-- MUST use `Promise.allSettled` (fail-soft — app loads even if some preloads fail)
-- MUST show a centered spinner with `role="status"` and `aria-label`
-- MUST use `staleTime: 30_000` to avoid immediate refetches after spinner hides
+---
 
-### Pagination
-```tsx
-function UsersPage() {
-  const [page, setPage] = useState(1)
+## 7.3 Real-Time Change Detection (Polling)
 
-  const { data, isLoading } = useQuery({
-    queryKey: ['users', page],         // page in queryKey = auto-refetch on page change
-    queryFn: () => usersApi.list({ limit: 20, offset: (page - 1) * 20 }),
-    staleTime: 2 * 60 * 1000,
-  })
+### Mechanism
+Frontend polls `GET /api/v1/changes/check?since=<ISO-8601-timestamp>` every 5 seconds via the `useTableChanges` hook.
 
-  return (
-    <>
-      <UserList users={data?.data ?? []} />
-      <Pagination page={page} total={data?.total} onPageChange={setPage} />
-    </>
-  )
-}
-```
+### `useTableChanges` Hook (`hooks/useTableChanges.ts`)
+Manages polling interval, tracks `hasChanges` state, stores `lastCheckedRef` timestamp. Exposes `{ hasChanges, lastTables, acknowledgeChanges, refresh }`.
 
-### Optimistic updates (for mutations)
-```tsx
-const updateUser = useMutation({
-  mutationFn: ({ id, data }) => usersApi.update(id, data),
-  onMutate: async ({ id, data }) => {
-    await queryClient.cancelQueries({ queryKey: ['users'] })
-    const previous = queryClient.getQueryData(['users'])
-    queryClient.setQueryData(['users'], (old) =>
-      old?.map(u => u.id === id ? { ...u, ...data } : u)
-    )
-    return { previous }
-  },
-  onError: (err, vars, context) => {
-    queryClient.setQueryData(['users'], context.previous)  // rollback
-  },
-  onSettled: () => {
-    queryClient.invalidateQueries({ queryKey: ['users'] })  // refetch
-  },
-})
-```
+### `UpdateBanner` Component (`components/UpdateBanner.tsx`)
+Fixed-position blue banner at the top of the viewport (`z-50`). Shows "New updates available" message + "Refresh" button + dismiss (X) button. Triggered when `hasChanges` becomes true. Animates in with `slide-down` CSS keyframe.
 
-## Real-Time Change Detection (Database Triggers + Polling)
-
-The frontend detects database changes (INSERT/UPDATE/DELETE) by polling the `GET /api/v1/changes/check?since=<timestamp>` endpoint.
-
-**Backend:**
-1. Database triggers on `users`, `roles`, `permissions`, `events` insert rows into `table_changes` log table
-2. The `changes/check` endpoint queries `table_changes` for records since the given timestamp
-
-**Frontend:**
-1. `useTableChanges` hook polls every 5 seconds
-2. When `has_changes` is true, `UpdateBanner` appears at the top of the viewport
-3. User can click "Refresh" to reload the page or "Dismiss" to acknowledge
+### Behavior
+- **Acknowledge:** Dismissing the banner calls `acknowledgeChanges()` which resets the `lastCheckedRef` timestamp and hides the banner. Future changes will re-trigger it.
+- **Refresh:** The Refresh button calls `window.location.reload()` to reload the entire app with fresh data.
+- **Silent Errors:** Polling errors are silently ignored (connection may be temporarily down) — the next poll cycle will retry.
+- **Accessibility:** Banner has `role="alert"` and `aria-live="polite"`. Refresh button has `aria-label="Refresh"`.
 
 ```tsx
-// hooks/useTableChanges.ts — simplified
+// hooks/useTableChanges.ts
 function useTableChanges() {
   const [hasChanges, setHasChanges] = useState(false)
   const lastCheckedRef = useRef(new Date().toISOString())
@@ -230,15 +144,32 @@ function useTableChanges() {
 }
 ```
 
-**Rules:**
-- Polling interval: 5 seconds (configurable)
-- Polling errors MUST be silently ignored (connection may be down)
-- The changes endpoint does NOT require auth (it only reveals that *something* changed, not what)
-- `table_changes` records MUST be pruned after 7 days to prevent unbounded growth
+---
 
-## Rules
+## React Query Setup Example
+
+```tsx
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000,
+      retry: 3,
+      retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10000),
+      refetchOnWindowFocus: true,
+      refetchOnReconnect: true,
+    },
+  },
+})
+```
+
+---
+
+## Hard Rules
+
 1. **EVERY data fetch MUST use `@tanstack/react-query`.** Direct `useEffect` + `fetch` is FORBIDDEN.
-2. **The custom `PreloaderContext`/`usePreloader` is DEPRECATED.** Do not use it in new code. Migrate existing usage.
+2. **The custom `PreloaderContext`/`usePreloader` is DEPRECATED.** Do not use it in new code.
 3. **Query keys MUST follow a consistent pattern:** `['entityName']` for lists, `['entityName', id]` for single items.
 4. **`staleTime` MUST be configured per query type:** user data (5 min), reference data (30 min), real-time data (0).
 5. **Cache invalidation MUST happen on mutations** via `queryClient.invalidateQueries()`.
@@ -247,13 +178,7 @@ function useTableChanges() {
 8. **Retry with exponential backoff** is enabled by default (max 3 retries).
 9. **`refetchOnWindowFocus` MUST be enabled** for data that changes frequently.
 10. **Pagination state MUST be in the query key** to trigger automatic refetches.
-
-## Migration Guide (from PreloaderContext to React Query)
-
-| Old Pattern | New Pattern |
-|------------|-------------|
-| `usePreload('key', fetcher)` | `useQuery({ queryKey: ['key'], queryFn: fetcher })` |
-| `preload('key', fetcher)` | `queryClient.prefetchQuery({ queryKey: ['key'], queryFn: fetcher })` |
-| `reload()` | `refetch()` |
-| `get('key')` | `queryClient.getQueryData(['key'])` |
-| After mutation: `reload()` | After mutation: `queryClient.invalidateQueries({ queryKey: ['key'] })` |
+11. **Polling interval:** 5 seconds (configurable).
+12. **Polling errors MUST be silently ignored** (connection may be down).
+13. **The changes endpoint does NOT require auth** (it only reveals that *something* changed, not what).
+14. **`table_changes` records MUST be pruned after 7 days** to prevent unbounded growth.

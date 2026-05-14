@@ -1,36 +1,63 @@
-# RBAC (Role-Based Access Control) Patterns
+# RBAC (Role-Based Access Control)
 
-> **MANDATORY:** ALL rules in `RULES.md` apply. This skill supplements, never overrides, `RULES.md`.
-> Every PR, commit, and deployment MUST comply with `RULES.md`. Deviations require an ADR.
+> **Source of Truth:** This skill defines ALL RBAC rules for the template.
+> **Compliance:** Mandatory for every PR, commit, and deployment.
+> **Deviation:** Requires an Architecture Decision Record (ADR).
 
-## Role Hierarchy
+---
+
+## 16.1 Role Hierarchy
+
 ```
-admin       → ALL permissions
-technician  → user:read, content CRUD, system:read, event:read
-member      → content:read/create/update
-customer    → content:read only
+admin       → ALL permissions (bypass — only hardcoded behavior)
+technician  → CRUD for most entities, read-only for sensitive/system
+member      → Read + limited create for CRM entities
+customer    → Read-only access to most entities
 ```
 
-## HARD RULES
+### Permission Namespaces
 
-### Permissions MUST be database-driven
-- The `permissions` database table is the **source of truth**. Hardcoded `ROLE_PERMISSIONS` dicts are FORBIDDEN.
-- Permissions MUST be queryable and configurable at runtime via API.
-- Every new permission MUST be added to the database permissions table.
+| Namespace | Entities | Permissions |
+|-----------|----------|-------------|
+| User Management | users | create, read, update, delete |
+| Role Management | roles | create, read, update, delete |
+| Content | content | create, read, update, delete |
+| System | system | read, admin |
+| Events | events | read, export |
+| Core CRM | accounts, contacts, leads, opportunities, activities, notes, cases, products | create, read, update, delete |
+| Extended CRM | campaigns, quotes, orders | create, read, update, delete |
+| Junction Tables | opportunity_products, order_items | create, read, delete (no update) |
+| HR | departments, positions, employees | create, read, update, delete |
+| Knowledge Base | kb_categories, kb_articles | create, read, update, delete |
+| TAM | territories, account_territories | create, read, update, delete (no update on junction) |
+| AI | action_logs, ai_recommendations | create, read, update (no user-facing create for recommendations) |
 
-### Backend MUST independently enforce
-- Frontend permission checks are for UX only (hide buttons, redirect).
-- Backend ALWAYS enforces permissions independently via the RBAC dependency system.
-- NEVER trust frontend claims about user permissions.
+---
 
-### No hardcoded role checks
-- `userRole === 'admin'` or similar inline checks are FORBIDDEN.
-- Use `hasPermission(user, permission)` or `require_permission(permission)` only.
-- `RoleGuard` and `PermissionGate` components MUST use centralized `hasPermission` function, not inline logic.
+## 16.2 Permission Model
 
-## Backend Implementation
+- Source of truth: `permissions` database table (role_id, action, resource).
+- Backend `PermissionType` enum MUST be updated when new permissions are added.
+- `ROLE_PERMISSIONS` mapping in code is a cache — DB is the source of truth.
+- New user default role: `"customer"`.
 
-### Backend RBAC
+---
+
+## 16.3 Backend Enforcement
+
+```python
+@router.get("/resource")
+async def get_resource(
+    current_user = Depends(rbac.require_permission(PermissionType.CONTENT_READ))
+): ...
+```
+
+- Every new protected route MUST add RBAC dependency.
+- **Prefer permission-based** (`require_permission`) over role-based (`require_role`) for fine-grained control.
+- NO inline `=== 'admin'` role checks — always use RBAC service/functions.
+- `hasRole` checks MUST include admin bypass (admin always passes).
+
+### Backend Implementation
 ```python
 from app.core.rbac import rbac, PermissionType, RoleType
 
@@ -49,16 +76,17 @@ has_perm = await rbac.user_has_permission(user, PermissionType.USER_CREATE)
 perms = await rbac.get_user_permissions(user)
 ```
 
-### Rule: Always test role collisions
-Every role/permission test MUST verify:
-1. Admin can access everything
-2. Customer cannot access admin features
-3. Roles cannot access features outside their permission set
-4. Inactive users cannot authenticate
+---
 
-## Frontend Implementation
+## 16.4 Frontend Enforcement (UX Only)
 
-### Frontend RBAC
+- `PermissionGate` component: permission-based gating (PREFERRED).
+- `RoleGuard` component: role-based gating (use only when whole role category needed).
+- `UserRoleBadge` component: display role badge.
+- `hasPermission(user, permission)` utility function from `types/role.ts`.
+- Frontend RBAC is for UX only — Backend is the real enforcement point.
+
+### Frontend Implementation
 ```tsx
 import { RoleGuard, PermissionGate, UserRoleBadge } from '@/components/rbac'
 
@@ -85,14 +113,70 @@ if (hasPermission(user.role, 'user:delete')) {
 }
 ```
 
-## Rules
-1. **Permissions MUST be database-driven** — never hardcoded in source code. Hardcoded role maps are FORBIDDEN.
-2. **Admin bypass** — admin always passes all permission/role checks (this is the ONLY hardcoded behavior).
-3. **Default role** — new users get "customer" role.
-4. **Every new route** that needs protection must add RBAC dependency with a database-backed permission check.
-5. **Every new permission** must be added to the `permissions` database table AND the `PermissionType` enum.
-6. **Tests MUST verify** — admin has access, customers are denied, each role has correct permissions.
-7. **No privilege escalation** — users cannot perform actions outside their role.
-8. **Backend enforces** — frontend RBAC is for UX only. The API gate is the real enforcement point.
-9. **`hasRole` vs `hasPermission`** — prefer permission-based checks over role-based checks for fine-grained control.
-10. **NO inline `=== 'admin'` checks** — always use the RBAC service/functions.
+---
+
+## 16.4 Additional Authorization Principles
+
+### Deny by Default
+- RBAC is built on a deny-by-default model: if no permission record exists for a role+resource+action combination, access is DENIED.
+- When adding new resources, explicitly verify that existing roles are NOT automatically granted access to them.
+- This applies to ALL layers: API routes, UI components, static files, and background jobs.
+
+### Least Privilege Enforcement
+- Every role's permissions MUST be scoped to the minimum required for that role's function.
+- **Horizontal least privilege:** Users with the same role should not automatically access each other's resources unless explicitly permitted (requires object-level ownership checks).
+- **Vertical least privilege:** Higher roles must explicitly define which lower-role permissions they inherit — no implicit "everything plus more."
+- Periodically audit active permissions for "privilege creep."
+
+### IDOR Prevention in RBAC Context
+- RBAC alone does NOT prevent IDOR. Even with the correct role, User A must not access User B's resource of the same type.
+- **Ownership checks** MUST be implemented independently of role checks:
+  - For user-owned resources: verify `resource.owner_id == current_user.id`.
+  - For group/team resources: verify `current_user` is a member of the resource's group.
+  - Admin bypass: admin can access any resource (this is the only hardcoded override).
+- Example pattern:
+  ```python
+  # Step 1: RBAC check — does user have permission for this action?
+  await rbac.require_permission(PermissionType.CONTENT_READ)(current_user)
+  # Step 2: Ownership check — does user own this specific resource?
+  resource = await content_service.get_by_id(resource_id)
+  if resource.owner_id != current_user.id and not current_user.is_admin:
+      raise HTTPException(status_code=403, detail="Insufficient privileges")
+  ```
+
+### When RBAC is Not Enough (ABAC Consideration)
+- Pure RBAC struggles with:
+  - **Object-level access control** (User A vs User B resources of same type).
+  - **Environment-aware decisions** (time-of-day, location, device type).
+  - **Multi-tenant isolation** (Org A vs Org B).
+- For these cases, supplement RBAC with **attribute checks** (temporal, environmental, relational) rather than adding more roles.
+- Do NOT implement a full ABAC engine until complexity warrants it. Relationship checks + RBAC cover most non-enterprise needs.
+
+### Safe Exit on Authorization Failure
+- All RBAC check failures MUST return **403 Forbidden** with a generic message: `{"error": {"code": "FORBIDDEN", "message": "Insufficient privileges"}}`.
+- **NEVER** reveal: the required permission name, the user's current permissions, or the specific reason for denial.
+- Authorization failures MUST be logged (see observability-patterns.md for `auth_failures_total` metric).
+
+---
+
+## Hard Rules
+
+1. **Permissions MUST be database-driven** — the `permissions` database table is the source of truth. Hardcoded `ROLE_PERMISSIONS` dicts are FORBIDDEN.
+2. **Permissions MUST be queryable and configurable at runtime** via API.
+3. **Every new permission MUST be added to the database permissions table** AND the `PermissionType` enum.
+4. **Backend MUST independently enforce** — frontend permission checks are for UX only (hide buttons, redirect). NEVER trust frontend claims about user permissions.
+5. **No hardcoded role checks** — `userRole === 'admin'` or similar inline checks are FORBIDDEN. Use `hasPermission(user, permission)` or `require_permission(permission)` only.
+6. **Admin bypass** — admin always passes all permission/role checks (this is the ONLY hardcoded behavior).
+7. **Default role** — new users get "customer" role.
+8. **Every new route** that needs protection must add RBAC dependency with a database-backed permission check.
+9. **Tests MUST verify** — admin has access, customers are denied, each role has correct permissions, inactive users cannot authenticate.
+10. **No privilege escalation** — users cannot perform actions outside their role.
+11. **Prefer permission-based** checks over role-based checks for fine-grained control.
+12. **`RoleGuard` and `PermissionGate`** MUST use centralized `hasPermission` function, not inline logic.
+13. **Junction tables** (opportunity_products, order_items, account_territories) use CREATE + READ + DELETE only — no UPDATE permission.
+14. **Dashboard metrics** uses `SYSTEM_READ` permission to avoid proliferation of read-only permission types.
+15. **Deny by default:** No matching permission rule → access DENIED. Verify when adding new resources.
+16. **IDOR prevention:** RBAC alone does not prevent IDOR. Every object access MUST include ownership validation.
+17. **Least privilege:** Permissions MUST be minimally scoped per role. Audit periodically.
+18. **Safe exit on authz failure:** Return 403 with generic message. NEVER leak permission details.
+19. **Log every authz failure** via `auth_failures_total` metric.

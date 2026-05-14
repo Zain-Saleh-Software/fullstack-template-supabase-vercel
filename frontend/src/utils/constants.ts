@@ -8,6 +8,7 @@ export const STORAGE_KEYS = {
     REFRESH_TOKEN: 'refresh_token',
     LOCALE: 'locale',
     USER: 'user',
+    THEME: 'theme',
 } as const
 
 export const ROUTES = {
@@ -15,4 +16,6 @@ export const ROUTES = {
     LOGIN: '/login',
     REGISTER: '/register',
     DASHBOARD: '/dashboard',
+    ACCOUNTS: '/accounts',
+    CONTACTS: '/contacts',
 } as const

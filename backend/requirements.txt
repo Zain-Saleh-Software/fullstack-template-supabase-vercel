@@ -11,9 +11,7 @@ slowapi==0.1.9
 bleach==6.1.0
 redis[hiredis]==5.1.1
 
-# ORM - Database
 asyncpg==0.30.0
-sqlalchemy[asyncio]==2.0.35
 
 # Observability
 structlog==24.4.0

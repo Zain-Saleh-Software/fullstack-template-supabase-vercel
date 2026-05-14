@@ -8,7 +8,10 @@ from app.core.rate_limit import limiter
 from app.core.security import decode_token, ExpiredTokenError, InvalidTokenError, MalformedTokenError
 from app.core.token_blacklist import token_blacklist
 from app.models.user import User
-from app.schemas.auth import LoginRequest, RegisterRequest, RefreshRequest, TokenResponse
+from app.schemas.auth import (
+    LoginRequest, RegisterRequest, RefreshRequest, TokenResponse,
+    ForgotPasswordRequest, ResetPasswordRequest,
+)
 from app.services.auth_service import auth_service
 
 security = HTTPBearer()
@@ -51,3 +54,15 @@ async def logout(credentials: HTTPAuthorizationCredentials = Depends(security)):
 @router.get("/me")
 async def get_me(current_user: User = Depends(get_current_user)):
     return await auth_service.get_me(current_user)
+
+
+@router.post("/forgot-password")
+@limiter.limit("3/hour")
+async def forgot_password(request: Request, body: ForgotPasswordRequest):
+    return await auth_service.forgot_password(body.email)
+
+
+@router.post("/reset-password")
+@limiter.limit("5/15minutes")
+async def reset_password(request: Request, body: ResetPasswordRequest):
+    return await auth_service.reset_password(body)

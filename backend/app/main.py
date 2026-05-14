@@ -8,15 +8,17 @@ from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
 from app.core.config import settings
-from app.core.observability import setup_tracing, logger
+from app.core.observability import logger
 from app.core.rate_limit import limiter
 from app.core.token_blacklist import token_blacklist
 from app.orm import close_orm
 from app.middleware.observability_middleware import ObservabilityMiddleware
 from app.middleware.request_logging_middleware import RequestLoggingMiddleware
-from app.api.v1 import auth_router, users_router, health_router, roles_router, events_router, changes_router
+from app.api.v1 import (
+    auth_router, users_router, health_router, roles_router, events_router, changes_router,
+    accounts_router, contacts_router,
+)
 
-# ─── Sentry (optional) ───────────────────────────────────────────────────
 if settings.sentry_dsn:
     import sentry_sdk
     sentry_sdk.init(
@@ -30,9 +32,6 @@ if settings.sentry_dsn:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    if settings.enable_tracing:
-        setup_tracing()
-        logger.info("tracing_initialized")
     logger.info("app_starting", app=settings.app_name, version=settings.app_version)
     yield
     await close_orm()
@@ -86,8 +85,8 @@ async def add_security_headers(request: Request, call_next):
     # We include Swagger UI sources (jsdelivr and fastapi.tiangolo.com) to allow docs to load.
     csp = (
         "default-src 'self'; "
-        "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
-        "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
+        "script-src 'self' https://cdn.jsdelivr.net; "
+        "style-src 'self' https://cdn.jsdelivr.net; "
         "font-src 'self' https://fonts.gstatic.com; "
         "img-src 'self' data: https://fastapi.tiangolo.com; "
         "connect-src 'self' https://cdn.jsdelivr.net https://*.supabase.co; "
@@ -157,6 +156,8 @@ app.include_router(users_router, prefix="/api/v1")
 app.include_router(roles_router, prefix="/api/v1")
 app.include_router(events_router, prefix="/api/v1")
 app.include_router(changes_router, prefix="/api/v1")
+app.include_router(accounts_router, prefix="/api/v1")
+app.include_router(contacts_router, prefix="/api/v1")
 
 
 # ─── Browser/DevTools Noise Suppression ──────────────────────────────────

@@ -10,7 +10,7 @@ from app.services.event_service import event_service
 router = APIRouter(prefix="/events", tags=["events"])
 
 
-@router.get("/")
+@router.get("")
 async def list_events(
     entity_type: Optional[str] = Query(None),
     event_type: Optional[str] = Query(None),

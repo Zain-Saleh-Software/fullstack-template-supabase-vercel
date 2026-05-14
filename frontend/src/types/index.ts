@@ -1,5 +1,6 @@
 export type Locale = 'en' | 'ar'
 export type Direction = 'ltr' | 'rtl'
+export type Theme = 'light' | 'dark' | 'system'
 
 export interface Preloadable<T> {
     data: T | null
@@ -10,9 +11,9 @@ export interface Preloadable<T> {
 
 export interface PaginatedResponse<T> {
     data: T[]
-    count: number
-    page: number
-    pageSize: number
+    total: number
+    limit: number
+    offset: number
 }
 
 export interface ApiError {

@@ -1,7 +1,6 @@
 import { createContext, useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import type { User, LoginRequest, RegisterRequest } from '@/types/user'
 import { authApi } from '@/api/auth'
-import api from '@/api/client'
 import { STORAGE_KEYS } from '@/utils/constants'
 
 interface AuthStateContextType {
@@ -62,8 +61,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(response.user)
     }, [])
 
-    const logout = useCallback(() => {
-        api.post('/auth/logout').catch(() => {})
+    const logout = useCallback(async () => {
+        try {
+            await authApi.logout()
+        } catch {
+            // backend logout is best-effort
+        }
         setUser(null)
         localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN)
         localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN)

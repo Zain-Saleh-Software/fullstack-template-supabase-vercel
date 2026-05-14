@@ -44,7 +44,16 @@
   - `Permissions-Policy: geolocation=(), microphone=(), camera=()`
   - `Strict-Transport-Security: max-age=31536000; includeSubDomains` (production only)
 - **Rate Limiting:** Global rate limit (100 req/min per IP) enforced via `slowapi`. Login: 5/min. Register: 10/min. Refresh: 20/min.
-- **Validation:** ALL user input MUST be validated using Pydantic (Backend) and Zod (Frontend).
+- **Validation:** ALL user input MUST be validated using Pydantic (Backend) and custom validators (Frontend).
+- **Frontend Validation Pattern:** All form inputs MUST validate data BEFORE submission to backend. Invalid entities MUST NOT be sent to backend if they can be rejected at the frontend.
+  - **Required Fields:** Must have non-empty value, proper type, and length requirements.
+  - **Optional Fields:** Can be empty or null, but if provided must validate format.
+  - **Type Safety:** All inputs MUST validate types (strings, numbers, booleans) to prevent type mismatches.
+  - **Error Handling:** Show friendly, user-friendly error messages under each invalid field. Use red borders and text for visual feedback.
+  - **Real-time Validation:** Clear errors when user starts typing/interaction begins.
+  - **Disabled Submit:** Submit button MUST be disabled when form has validation errors.
+  - **Accessibility:** All validation errors MUST have `role="alert"` and `aria-invalid="true"`.
+  - **Database Constraints:** All string fields MUST have check constraints for validation.
 - **Sanitization:** Sanitize all user-provided text with `bleach.clean(text, tags=[], strip=True)` before DB insertion.
 - **Body Size Limit:** Maximum request body size: 10MB. Enforced via middleware returning 413 `{"error": {"code": "PAYLOAD_TOO_LARGE", "message": "Request body too large"}}`.
 - **Host Validation:** Validate `Host` header against `ALLOWED_HOSTS`. Return 400 `{"error": {"code": "INVALID_HOST", "message": "Invalid host header"}}` on mismatch.
@@ -609,15 +618,16 @@ frontend/src/tests/
 
 ### 12.8 What to Test Per Feature
 1. **Models:** serialization, `to_response()`, `_table()`, model_dump (exclude sensitive fields)
-2. **Schemas:** validation (required fields, type checks, custom validators)
+2. **Schemas:** validation (required fields, type checks, custom validators, type coercion)
 3. **Services:** business logic (success, error, edge cases), events table decisions
 4. **Routes:** status codes, response shape, auth enforcement, RBAC enforcement
 5. **RBAC:** permission checks, role hierarchy, access denials, admin bypass
 6. **Observability:** decorators work, metrics recorded, logger functions, events table only gets business data (Golden Question pass)
-7. **Frontend:** permission helpers, component rendering (loading/empty/error/success), auth state
-8. **Middleware:** ObservabilityMiddleware metrics counters, RequestLoggingMiddleware structured logging (excludes health)
-9. **`update_by`/`delete_by`:** verify error raised when no filters provided
-10. **Events:** verify `count_events` respects all filter parameters (entity_type, event_type, actor_id)
+7. **Frontend:** permission helpers, component rendering (loading/empty/error/success), auth state, form validation
+8. **Frontend Validation:** All validation functions, type guards, error messages, edge cases (empty, invalid format, type mismatches)
+9. **Middleware:** ObservabilityMiddleware metrics counters, RequestLoggingMiddleware structured logging (excludes health)
+10. **`update_by`/`delete_by`:** verify error raised when no filters provided
+11. **Events:** verify `count_events` respects all filter parameters (entity_type, event_type, actor_id)
 
 ### 12.9 Test Isolation & Quality
 - Tests MUST NOT depend on external services (real Supabase, Redis, etc.) unless explicitly marked as separate integration tests.

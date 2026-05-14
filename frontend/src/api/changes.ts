@@ -1,15 +1,14 @@
 import api from './client'
 
-export interface ChangeCheckResponse {
+interface ChangeCheckResponse {
     has_changes: boolean
     tables: string[]
+    checked_at: string
 }
 
 export const changesApi = {
     check: async (since: string): Promise<ChangeCheckResponse> => {
-        const response = await api.get<ChangeCheckResponse>('/changes/check', {
-            params: { since },
-        })
-        return response.data
+        const { data } = await api.get('/changes/check', { params: { since } })
+        return data
     },
 }

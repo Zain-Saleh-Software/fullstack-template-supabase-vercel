@@ -2,10 +2,10 @@ import { useAuth } from '@/hooks/useAuth'
 import type { RoleType } from '@/types/role'
 
 const roleStyles: Record<RoleType, string> = {
-    admin: 'bg-purple-100 text-purple-800',
-    technician: 'bg-blue-100 text-blue-800',
-    member: 'bg-green-100 text-green-800',
-    customer: 'bg-gray-100 text-gray-800',
+    admin: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
+    technician: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
+    member: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+    customer: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300',
 }
 
 const roleLabels: Record<RoleType, string> = {
