@@ -1,6 +1,7 @@
 import asyncio
 import json
 import uuid
+from datetime import date, datetime
 from typing import Any, Optional
 
 import asyncpg
@@ -38,6 +39,30 @@ def validate_builder_filters(table: str, filters: list[tuple[str, str, object]])
     for _, col, _ in filters:
         if col not in known:
             raise ValueError(f"Unknown column '{col}' for table '{table}'")
+
+
+_DATE_FMT = "%Y-%m-%d"
+_DATETIME_FMT = "%Y-%m-%dT%H:%M:%S"
+
+
+def _convert_val(v: Any) -> Any:
+    if isinstance(v, str):
+        if v == "":
+            return None
+        if len(v) == 10 and v[4] == "-" and v[7] == "-":
+            try:
+                return datetime.strptime(v, _DATE_FMT).date()
+            except ValueError:
+                pass
+        if len(v) >= 19 and v[10] == "T":
+            try:
+                return datetime.strptime(v[:19], _DATETIME_FMT)
+            except ValueError:
+                pass
+        return v
+    if isinstance(v, (dict, list)):
+        return json.dumps(v)
+    return v
 
 
 class PostgresORM(BaseORM):
@@ -79,6 +104,10 @@ class PostgresORM(BaseORM):
                     data[key] = json.loads(value)
                 except (json.JSONDecodeError, TypeError):
                     pass
+            elif isinstance(value, (date, datetime)):
+                data[key] = value.isoformat()
+            elif isinstance(value, int):
+                data[key] = str(value)
         return data
 
     async def _row_to_model(self, model_class: type[T], row: Optional[asyncpg.Record]) -> Optional[T]:
@@ -200,7 +229,7 @@ class PostgresORM(BaseORM):
         table = model_class._table()
         columns = list(data.keys())
         validate_columns(table, columns)
-        values = [json.dumps(v) if isinstance(v, (dict, list)) else v for v in data.values()]
+        values = [_convert_val(v) for v in data.values()]
         placeholders = ', '.join([f'${i+1}' for i in range(len(values))])
         columns_str = ', '.join([f'"{c}"' for c in columns])
 
@@ -226,7 +255,7 @@ class PostgresORM(BaseORM):
         placeholders_list = []
         idx = 1
         for data in data_list:
-            vals = [json.dumps(data[c]) if isinstance(data[c], (dict, list)) else data[c] for c in columns]
+            vals = [_convert_val(data[c]) for c in columns]
             all_values.extend(vals)
             ph = ', '.join([f'${idx + i}' for i in range(len(vals))])
             placeholders_list.append(f'({ph})')
@@ -246,7 +275,7 @@ class PostgresORM(BaseORM):
         pool = await self._get_pool()
         table = model_class._table()
         validate_columns(table, list(data.keys()))
-        values = [json.dumps(v) if isinstance(v, (dict, list)) else v for v in data.values()]
+        values = [_convert_val(v) for v in data.values()]
         set_clause = ', '.join([f'"{k}" = ${i+1}' for i, k in enumerate(data.keys())])
         values.append(id)
 
@@ -266,7 +295,7 @@ class PostgresORM(BaseORM):
         table = builder.table
         validate_columns(table, list(data.keys()))
         validate_builder_filters(table, builder.filters)
-        values = [json.dumps(v) if isinstance(v, (dict, list)) else v for v in data.values()]
+        values = [_convert_val(v) for v in data.values()]
         set_clause = ', '.join([f'"{k}" = ${i+1}' for i, k in enumerate(data.keys())])
         conditions = []
         param_idx = len(values) + 1

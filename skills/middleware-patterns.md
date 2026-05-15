@@ -53,6 +53,11 @@
 - `SecurityHeadersMiddleware` MUST only set HSTS in production environment.
 - **Password reset pages** MUST additionally override `Referrer-Policy` to `noreferrer` to prevent reset token leakage via the HTTP Referer header. This can be done per-route in the reset page handler.
 
+### Content-Type Validation Middleware
+- `BodySizeLimitMiddleware` and content-type validation MUST only enforce Content-Type when the request has an actual body (Content-Length > 0).
+- POST/PATCH/PUT endpoints that accept no body (e.g., `/auth/logout`) MUST NOT require `Content-Type: application/json`.
+- The middleware MUST check `content-length` header before enforcing type constraints to avoid false 415 errors on bodyless requests.
+
 ### Authentication Middleware
 - `AuthenticationMiddleware` MUST extract and validate JWT from HTTP-only cookie on every request.
 - MUST set `user_id_var` context variable on successful authentication for observability correlation.

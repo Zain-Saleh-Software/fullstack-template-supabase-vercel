@@ -83,15 +83,37 @@ api.interceptors.response.use(
             }
         }
 
-        // Enhance error with structured backend message and request ID if available
         if (error.response?.data?.error?.message) {
             error.message = error.response.data.error.message
-            const reqId = error.response.headers?.['x-request-id']
-            if (reqId) {
-                error.message += ` (Request ID: ${reqId})`
+        } else if (error.response?.data?.detail) {
+            const detail = error.response.data.detail
+            if (Array.isArray(detail)) {
+                const messages = detail.map((d: { loc?: string[]; msg?: string; type?: string }) => {
+                    const field = d.loc && d.loc.length > 1 ? d.loc[d.loc.length - 1] : null
+                    let msg = d.msg || ''
+                    if (msg.startsWith('Value error, ')) {
+                        msg = msg.substring('Value error, '.length)
+                    } else if (msg === 'Field required') {
+                        msg = 'This field is required'
+                    }
+                    if (field && !msg.toLowerCase().includes(field.replace(/_/g, ' '))) {
+                        const label = field.replace(/_/g, ' ')
+                        return `${label}: ${msg}`
+                    }
+                    return msg
+                })
+                error.message = messages.join('; ')
+            } else if (typeof detail === 'string') {
+                error.message = detail
             }
-        } else if (error.response?.headers?.['x-request-id']) {
-            error.message += ` (Request ID: ${error.response.headers['x-request-id']})`
+        }
+        const reqId = error.response?.headers?.['x-request-id']
+        if (reqId) {
+            const msg = error.message || ''
+            const lines = msg.split('; ')
+            const cleaned = lines.filter((l: string) => !l.includes('(Request ID:'))
+            cleaned.push(`Request ID: ${reqId}`)
+            error.message = cleaned.join('; ')
         }
 
         return Promise.reject(error)

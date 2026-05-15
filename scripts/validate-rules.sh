@@ -43,8 +43,10 @@ IMMUTABLE_PATHS=(
 EXPECTED_SKILLS=(
     "skills/ai-collaboration-patterns.md"
     "skills/ai-init-project.md"
-    "skills/crm-database-patterns.md"
+    "skills/authentication-patterns.md"
+    "skills/authorization-patterns.md"
     "skills/configuration-patterns.md"
+    "skills/crm-database-patterns.md"
     "skills/deployment-patterns.md"
     "skills/error-handling-patterns.md"
     "skills/frontend-patterns.md"
@@ -58,6 +60,7 @@ EXPECTED_SKILLS=(
     "skills/rbac-patterns.md"
     "skills/security-patterns.md"
     "skills/testing-patterns.md"
+    "skills/validation-patterns.md"
 )
 
 # ─── Helper Functions ───────────────────────────────────────────────────────

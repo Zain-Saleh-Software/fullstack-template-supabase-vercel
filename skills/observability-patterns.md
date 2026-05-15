@@ -159,6 +159,12 @@ class SomeService:
 - Technical operations (login, refresh, API calls, background jobs) MUST NOT write to events table.
 - Service code writes to events table. Middleware MUST NOT.
 
+### Notifications on State Changes
+- Any service operation that changes ownership/assignment of a resource to a user (e.g., assigning a complaint to a technician) MUST create a notification for that user via `notification_service.create()`.
+- The notification MUST include: meaningful `title` (e.g., "New complaint assigned"), descriptive `body`, `type="assignment"`, and the target `user_id`.
+- This logic MUST live in the service layer (not the route) so it fires regardless of how the update is triggered.
+- Failed notification creation MUST NOT block the primary operation (wrap in try/except with error logging).
+
 ### Middleware (observability-related)
 - `SecurityHeadersMiddleware`: Security headers on every response, never writes DB.
 - `ObservabilityMiddleware`: Prometheus metrics, trace context, X-Request-ID, never writes DB.

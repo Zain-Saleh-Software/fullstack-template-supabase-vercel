@@ -180,3 +180,7 @@ if (hasPermission(user.role, 'user:delete')) {
 17. **Least privilege:** Permissions MUST be minimally scoped per role. Audit periodically.
 18. **Safe exit on authz failure:** Return 403 with generic message. NEVER leak permission details.
 19. **Log every authz failure** via `auth_failures_total` metric.
+20. **Every CRUD operation MUST have its own dedicated permission** — never reuse `READ` permission for `UPDATE`, or `UPDATE` permission for `DELETE`. Each route's `require_permission()` MUST match the actual operation.
+21. **All four CRUD permissions (CREATE/READ/UPDATE/DELETE) MUST exist in PermissionType enum** for every entity that supports all four operations. Missing permissions (e.g., `NOTIFICATION_DELETE` or `ATTENDANCE_REPORT_UPDATE`) are bugs.
+22. **When a role can receive a resource (e.g., notifications), it MUST also have UPDATE permission** to manage that resource (e.g., mark notifications as read). Check role-permission completeness during code review.
+23. **After ANY change to `ROLE_PERMISSIONS` in `rbac.py`, the database MUST be re-seeded** (`python -c "from app.utils.seed import seed_roles_and_permissions; asyncio.run(seed_roles_and_permissions())"`) — the in-memory mapping is only a fallback; the DB `permissions` table is the source of truth.

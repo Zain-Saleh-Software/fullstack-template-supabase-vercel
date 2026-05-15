@@ -46,6 +46,13 @@ BaseORM (abstract) ← SupabaseORM, PostgresORM
 - `PostgresORM._convert_row()` automatically converts all `uuid.UUID` values to strings before model construction.
 - Pydantic models MUST use `id: str` — no special validators needed.
 
+### Type Consistency (DB <-> Model)
+- Model field types MUST exactly match DB column types (e.g., `lat`/`lng` stored as `double precision` in DB MUST be `float` in the model and schemas, NOT `str`).
+- Any mismatch between Pydantic model types and actual DB column types will cause 500 errors at runtime when the ORM attempts to construct models from DB rows.
+- Always verify DB column types via migration SQL or `\d tablename` in psql before defining model/schema types.
+- `decimal`/`numeric` DB types map to `float` in Pydantic (use `Optional[float]` for nullable numeric columns).
+- Coordinate fields (`lat`, `lng`) MUST use `float`, NOT `str`.
+
 ### Model Conventions
 Every model MUST have:
 ```python

@@ -26,13 +26,9 @@ class Settings(BaseSettings):
     # ─── JWT ─────────────────────────────────────────────────────────────
     secret_key: Optional[str] = None
     jwt_secret: str = "change-me"
-    jwt_algorithm: str = "RS256"
+    jwt_algorithm: str = "HS256"
     jwt_access_token_expire_minutes: int = 30
     jwt_refresh_token_expire_days: int = 7
-
-    # RS256 key pair — if unset, falls back to HS256 using jwt_secret
-    jwt_private_key: Optional[str] = None
-    jwt_public_key: Optional[str] = None
 
     # ─── Password Reset ──────────────────────────────────────────────────
     password_reset_base_url: str = "http://localhost:5173/reset-password"

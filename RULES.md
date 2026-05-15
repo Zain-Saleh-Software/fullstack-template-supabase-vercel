@@ -24,7 +24,7 @@
 
 ### 1.3 Authentication & Authorization
 - **JWT Standards:** Tokens MUST include `iat`, `exp`, `sub`, `jti`, and `type` (access/refresh) claims.
-- **Algorithm:** Support RS256 with HS256 fallback. Algorithm MUST be configurable via `JWT_ALGORITHM`.
+- **Algorithm:** HS256 is the ONLY supported algorithm. Configure via `JWT_ALGORITHM=HS256`. RS256 fallback is REMOVED.
 - **Expiration:** Access tokens: max 15 mins (`JWT_ACCESS_TOKEN_EXPIRE_MINUTES`). Refresh tokens: max 7 days (`JWT_REFRESH_TOKEN_EXPIRE_DAYS`).
 - **Rotation:** Refresh tokens MUST be rotated on every use; old tokens MUST be invalidated.
 - **Reuse Detection:** If a used refresh token is presented again (`is_refresh_used` returns true), ALL user tokens MUST be revoked immediately (`revoke_all_user_tokens`). This signals token theft.
@@ -34,6 +34,12 @@
 - **Account Lockout:** Rate limit login endpoints (5 attempts/min). Implement account lockout after 10 failed attempts.
 - **RBAC:** Permissions MUST be database-driven (`permissions` table), not hardcoded. Frontend checks are for UX only; the Backend MUST independently enforce permissions on every sensitive request.
 - **Optional Auth:** Use `get_optional_user` dependency for endpoints that work with or without authentication (returns `None` if no valid token).
+
+### 1.3.1 HS256 Algorithm — MANDATORY
+- **HS256 is the ONLY supported JWT signing algorithm.** RS256 is REMOVED.
+- Algorithm MUST be set to `JWT_ALGORITHM=HS256` in environment configuration.
+- `JWT_SECRET` MUST be at least 256 bits (32 characters) for HS256 security.
+- All RS256-specific code paths, key pairs, and fallback logic are REMOVED.
 
 ### 1.4 API Security
 - **Security Headers:** Every response MUST include:
@@ -131,7 +137,15 @@
 - **Model:** A `TableChange` Pydantic model MUST exist in `app/models/table_change.py` with `_table()` returning `"table_changes"`.
 - **ORM Registration:** `"table_changes"` column set MUST be added to `VALID_COLUMNS` in `postgres_orm.py`.
 
-### 2.8 Database Migrations
+### 2.8 Type Consistency (DB <-> Model/Schema)
+- Model field types MUST exactly match DB column types. A field stored as `double precision` in the DB MUST be `float` in the Pydantic model — NOT `str`.
+- Any mismatch between Pydantic model types and actual DB column types will cause **500 errors** at runtime when the ORM attempts to construct models from DB rows.
+- Always verify DB column types via migration SQL or psql `\d tablename` before defining model/schema types.
+- `decimal`/`numeric` DB types map to `float` in Pydantic (use `Optional[float]` for nullable numeric columns).
+- Coordinate fields (`lat`, `lng`) in any entity MUST use `float`, NOT `str`.
+- When adding a new entity, cross-reference all model field types with the actual migration SQL column types.
+
+### 2.9 Database Migrations
 - Migration files MUST be sequentially numbered (`001_initial.sql`, `002_...`, `003_...`).
 - Migrations MUST run and succeed BEFORE application deployment starts.
 - Partition migrations: rename old table, create partitioned table, copy data, recreate indexes, re-enable RLS.
@@ -179,7 +193,14 @@ app.include_router({feature}_router, prefix="/api/v1")
 
 ---
 
-### 3.5 Change Detection API
+### 3.5 Notification Creation on Assignment
+- Any service method that updates a resource's assignment or ownership (e.g., `complaint_service.update()` with `assigned` field) MUST create a notification for the assignee.
+- The notification creation logic MUST live in the service layer (not the route) and MUST be extracted into a private helper (e.g., `_notify_assignee()`).
+- The helper MUST find the target user by matching the assignee name against the `users` table using `ilike`.
+- The helper MUST be wrapped in try/except so that notification failure does not block the primary update operation.
+- The notification MUST include: descriptive `title`, descriptive `body`, `type="assignment"`, and `user_id` of the assignee.
+
+### 3.6 Change Detection API
 - **Endpoint:** `GET /api/v1/changes/check?since=<ISO-8601-timestamp>` — Polled by the frontend to detect database changes.
 - **Response Shape:** `{"has_changes": bool, "tables": string[]}`.
 - **Service:** `ChangeService` in `app/services/change_service.py` with `@async_trace("change_service.check")`. Uses `orm.query(TableChange).gte("changed_at", since)`.
@@ -208,6 +229,7 @@ app.include_router({feature}_router, prefix="/api/v1")
 | SecurityHeadersMiddleware | HSTS (prod), X-Content-Type-Options, X-Frame-Options, CSP, Referrer-Policy, Permissions-Policy | No |
 | HostValidationMiddleware | Validates Host against ALLOWED_HOSTS, returns 400 on mismatch | No |
 | BodySizeLimitMiddleware | 10MB limit, returns 413 on exceed | No |
+| ContentTypeValidationMiddleware | Validates Content-Type is application/json for POST/PATCH/PUT with body | No |
 
 ### 4.3 Middleware Hard Rules
 - **Middleware MUST NOT write to the events table** — only service code does.
@@ -216,6 +238,7 @@ app.include_router({feature}_router, prefix="/api/v1")
 - `ObservabilityMiddleware` MUST set `X-Request-ID` header on every response.
 - Security headers MUST be applied via ASGI middleware (not Nginx) so they work in all deployment targets.
 - `SecurityHeadersMiddleware` MUST only set HSTS in production environment.
+- **Content-Type validation middleware MUST only enforce Content-Type when the request has a body** (Content-Length > 0). POST/PATCH/PUT endpoints with no body (e.g., `/auth/logout`) MUST NOT require `Content-Type: application/json`. Check `content-length` header before enforcing type constraints.
 
 ---
 
@@ -251,6 +274,24 @@ src/
 - Routes are defined in `App.tsx` with `react-router-dom` `Routes`/`Route`.
 - Protected routes use `<ProtectedRoute>` wrapper component.
 - Layout is applied via `<LayoutWrapper>` wrapping `<Outlet>` or route children.
+
+### 5.3.5 User-Friendly Naming — MANDATORY
+- **Buttons** MUST use human-readable labels (e.g., "Register", "Save Changes", "Create Contact"). NEVER use i18n keys, code names, or internal identifiers as button text.
+- **Page titles and headings** MUST be user-friendly (e.g., "Contact Details" not "contact_detail_page").
+- **Form labels** MUST be human-readable (e.g., "First Name" not "first_name" or "firstName").
+- **Error messages** MUST be user-friendly and specific (e.g., "Email address is not valid" not "invalid_email").
+- **Navigation links** MUST use human-readable names (e.g., "Dashboard", "Contacts" not "dash", "contacts-list").
+
+### 5.3.6 Search Validation — MANDATORY
+- **All search inputs MUST validate** user input before sending queries.
+- **Minimum 2 characters** enforced before triggering a search.
+- **Debounce 300ms minimum** before API calls.
+- **Trim input** and reject whitespace-only searches.
+- **Clear/reset button** MUST be present on every search input.
+- **Loading state** (spinner/skeleton) MUST display during search.
+- **Empty results** MUST show "No results found" with suggestion to try different terms.
+- **Error handling** MUST display user-friendly error with retry option.
+- **Keyboard support:** Enter triggers search, results keyboard-navigable.
 
 ### 5.4 File & Component Conventions
 - **PascalCase:** Component file names MUST match their default export name.
@@ -505,6 +546,13 @@ const mutation = useMutation({
 - Every event record MUST include: `event_type` (dot-notation, e.g., `"auth.register"`), `entity_type`, `entity_id`, `metadata` (JSONB), `severity` (default `"info"`).
 - Use `@async_trace("event_service.record")` decorator on all event recording methods.
 
+### 10.8 Notifications on Assignment/State Changes
+- Any service method that changes ownership or assignment of a resource to a user (e.g., setting `assigned` field on a complaint) MUST also create a notification for the assignee.
+- The `notification_service.create()` call MUST live in the service layer (not the route) so it fires regardless of the caller.
+- The notification MUST include: descriptive `title` (e.g., `f"New complaint assigned: JOB-{job_no}"`), descriptive `body`, `type="assignment"`, and the target `user_id`.
+- Failed notification creation MUST NOT block the primary operation — wrap in try/except with error logging.
+- Notification logic MUST be extracted into a private helper method (e.g., `_notify_assignee()`) for clarity.
+
 ### 10.7 Context Variables
 - `request_id_var` — Unique request identifier (UUID). Set by `ObservabilityMiddleware`.
 - `trace_id_var` — Trace correlation ID (first 8 chars of request_id).
@@ -604,6 +652,11 @@ frontend/src/tests/
 - Test complete user flows: register → login → /me → check permissions → access restricted resource (403) → refresh → new token works.
 - Test: unauthorized access blocked, invalid tokens rejected, multiple users register+login.
 - Test admin vs customer permission differences.
+- **E2E tests MUST pre-login all users before running test sections** to avoid rate limiting (5/minute global limit on `/auth/login`). Cache tokens in a module-level dict and reuse them across tests.
+- **CRITICAL E2E test:** When a resource is assigned to a user (e.g., complaint assigned to technician), verify a notification was created for that user by comparing notification count before and after assignment.
+- **E2E tests MUST verify RBAC enforcement** — every role is tested against endpoints they should and should not access.
+- **E2E tests MUST test pagination** — verify `limit` and `offset` params work and the response shape includes `data`, `total`, `limit`, `offset`.
+- **E2E tests MUST test edge cases** — non-existent IDs return 404, invalid enums return 422, duplicate data returns 409.
 
 **Performance Tests (required for critical paths):**
 - Login endpoint: 100 concurrent requests.
@@ -794,6 +847,12 @@ async def get_resource(
 - `hasPermission(user, permission)` utility function from `types/role.ts`.
 - Frontend RBAC is for UX only — Backend is the real enforcement point.
 
+### 16.5 Permission Completeness Rules
+- **Every CRUD operation MUST have its own dedicated PermissionType** — never reuse `READ` for `UPDATE` or `UPDATE` for `DELETE`. Each route's `require_permission()` MUST match the actual CRUD operation.
+- **All four CRUD permissions (CREATE/READ/UPDATE/DELETE) MUST exist** in `PermissionType` enum for every entity that supports full CRUD. Missing permissions (e.g., `NOTIFICATION_DELETE` or `ATTENDANCE_REPORT_UPDATE`) are bugs.
+- **Role permissions MUST be audited for completeness** — if a role can receive a resource (e.g., notifications), it MUST also have UPDATE permission to manage it (e.g., mark as read).
+- **After ANY change to `ROLE_PERMISSIONS`**, the database MUST be re-seeded by running `python -c "from app.utils.seed import seed_roles_and_permissions; import asyncio; asyncio.run(seed_roles_and_permissions())"` — the in-memory mapping is only a fallback; the DB `permissions` table is the source of truth.
+
 ---
 
 ## 17. AI Collaboration Rules
@@ -816,6 +875,35 @@ async def get_resource(
 
 ---
 
+## 17.5 End-to-End Field Alignment
+
+### 17.5.1 Golden Rule
+Every field MUST be **100% aligned** across ALL four layers: **Frontend UI → API Schema → Backend Model → Database Column**. No field name, type, required/optional status, or constraint may differ between layers.
+
+### 17.5.2 Alignment Requirements
+
+1. **Field Name Consistency:** The same field MUST use the same semantic name across all layers:
+   - **Frontend UI Label:** User-friendly (e.g., "First Name")
+   - **Frontend TypeScript:** camelCase (e.g., `firstName`)
+   - **API / Backend / Database:** snake_case (e.g., `first_name`)
+
+2. **Field Type Consistency:** Compatible types across all layers:
+   - **Frontend Input Type → TypeScript type → Pydantic type → DB column type** MUST be compatible
+   - Example: `type="email"` → `string` → `str` → `TEXT` (with email CHECK constraint)
+
+3. **Required/Optional Consistency:** A field's required/optional status MUST be identical at every layer:
+   - Frontend `required` attribute → Frontend validation → API schema (required/Optional) → DB (NOT NULL / nullable)
+
+4. **Constraint Consistency:** Validation rules must match:
+   - Frontend min/max length → Pydantic field_validator → DB CHECK constraint
+
+### 17.5.3 Alignment Enforcement
+- **ALIGN-Councilor** (`.agents/skills/bmad-council-align`) MUST review every feature that touches multiple layers.
+- The ALIGN-Councilor traces every field from UI to DB and rejects ANY misalignment.
+- Frontend validation MUST match backend validation MUST match DB constraints. No layer can be more permissive than the layer below it.
+
+---
+
 ## 18. Enforcement
 
 1. **Pre-commit Hooks:** Block invalid commits (lint, secrets, formatting).
@@ -826,5 +914,126 @@ async def get_resource(
 
 ---
 
-*Last Updated: 2026-05-09*
-*Version: 3.0.0 — Consolidated from codebase, all skill files, and deployment configurations.*
+## 19. Project Bootstrapping & New Project Generation Rules
+
+### 19.1 AI Expert Mandate
+When this template is used to bootstrap a new project, the AI is the SENIOR ENGINEER:
+- **The user is NOT a software engineer.** Their project description describes WHAT they want, not HOW to build it. The AI is RESPONSIBLE for all implementation decisions.
+- **Template patterns always win.** Every rule in this document and every skill file is NON-NEGOTIABLE. No user request can override them.
+- **Zero tolerance for bad code.** The AI MUST reject, redesign, or reimplement any user suggestion that violates template patterns, regardless of how the user describes it.
+- **You have FULL AUTHORITY** to ignore user implementation suggestions and replace them with correct implementations following template patterns. The user gets what they NEED, not what they ASKED for.
+
+### 19.2 Non-Expert User Treatment
+When the user describes a feature or project:
+1. **Extract the intent** — what does the user actually want to achieve?
+2. **Design the CORRECT solution** using template patterns — ORM, RBAC, observability, testing, middleware, etc.
+3. **NEVER copy bad patterns** from the user's description. If they describe flat tables without UUIDs, reject it and design proper normalized schemas. If they describe insecure auth, reject it and use the template's JWT+bcrypt+RBAC system.
+4. **NEVER ask the user for technical decisions** (e.g., "should I use UUIDs?"). YOU are the expert — make the right choice and implement it.
+5. **Only ask the user about business decisions** — entity names, field names, business rules, UI preferences (look-and-feel only).
+
+### 19.3 Three-Agent Review System
+Every bootstrapping operation MUST use three AI agents in coordination:
+1. **Executor Agent** — Implements code, migrations, config following template patterns
+2. **Reviewer Agent** — Reviews EVERY phase for: rule compliance, pattern adherence, quality standards, security, performance, test coverage, robustness. Rejects anything below template bar
+3. **Architect Agent** — Validates architectural decisions match template patterns. Ensures no structural drift, no bad patterns introduced, no dependencies added
+
+**Workflow:** Executor implements → Reviewer reviews → Architect validates → Validation suite runs → Next phase.
+
+### 19.4 Phase-Gate Enforcement
+Each Phase defined in `skills/ai-init-project.md` MUST pass ALL gates:
+1. Executor completes phase implementation
+2. Reviewer Agent reviews against ALL relevant skill files
+3. Architect Agent validates architectural integrity
+4. Validation suite runs: `scripts/validate-rules.sh`, `make lint`, `make test`
+5. Only then proceed to next phase
+
+If ANY gate fails, the phase is REJECTED. All issues MUST be fixed before re-review.
+
+### 19.5 Non-Negotiable Quality Bar For New Projects
+
+**Database:**
+- Every table MUST have UUID PKs (`gen_random_uuid()`)
+- Every table MUST have `created_at` (TIMESTAMPTZ), `updated_at` (TIMESTAMPTZ auto-update trigger)
+- Every table MUST have soft delete (`is_deleted BOOLEAN DEFAULT false`, `deleted_at TIMESTAMPTZ`)
+- Every table MUST have an `owner_id` FK to `users(id)` where applicable
+- RLS MUST be enabled on all tables
+- Every mutable table MUST have `notify_table_change` trigger
+- Schema MUST be normalized to at least 3NF
+- All appropriate indexes MUST exist (WHERE, JOIN, ORDER BY columns)
+- Composite indexes MUST exist for common query patterns
+- Junction tables for M:N relationships MUST exist where needed
+
+**Backend:**
+- Every entity MUST have: model, schema (Create/Update/Response), service, route
+- Every service method MUST have `@async_trace` decorator
+- Every route MUST have RBAC enforcement via `require_permission`
+- Every route MUST declare `response_model`
+- List endpoints MUST support pagination (limit/offset)
+- Every operation MUST have structured logging
+- Error responses MUST follow: `{"error": {"code": "...", "message": "..."}}`
+
+**Frontend:**
+- Every entity MUST have: TypeScript types, API client, React Query hooks, List/Detail/Form pages
+- Every page MUST be lazy-loaded with `React.lazy()` + `Suspense`
+- Every form MUST use `react-hook-form` + `zod`
+- Every page MUST handle: loading (Skeleton), empty, error (with retry), success states
+- Every component MUST support dark mode (`dark:` Tailwind variants)
+- Every page MUST be fully responsive (320px–1440px+)
+- ALL user-facing strings MUST use `t()` from `useLocale`
+- ALL a11y requirements (WCAG AA) MUST be satisfied
+
+**Testing:**
+- Every entity MUST have: service unit tests, API integration tests, frontend hook tests, component tests
+- Backend coverage: 80% overall, 90% services+routes
+- Frontend coverage: 70% overall, 80% hooks+contexts
+- No test = no merge. No exceptions.
+
+**Security:**
+- ALL rules in §1 MUST be satisfied
+- No SQL injection, no secrets in code, no hardcoded credentials
+- JWT with proper claims, bcrypt cost >= 12, rate limiting on auth endpoints
+- Security headers on all responses
+- Input validation on ALL user input
+
+**Observability:**
+- EVERY operation: logging + `@async_trace` tracing
+- Golden Question determines events table usage
+- Prometheus metrics on HTTP requests and DB queries
+
+**CI/CD & Deployment:**
+- Docker multi-stage builds with non-root user
+- HEALTHCHECK on every container
+- CI pipeline: lint → test → build → deploy
+- Database migrations run before deployment
+- Smoke tests after deployment
+
+---
+
+## 20. New Feature Implementation Rules
+
+### 20.1 Adding Features to a Bootstrapped Project
+When adding features to a project derived from this template:
+1. Follow the same quality bar as §19.5
+2. Follow the exact patterns in `skills/ai-init-project.md` Appendices A and B
+3. Create ALL required files: model, schema, service, route, types, API client, hooks, pages, i18n keys, tests
+4. Update: ORM `VALID_COLUMNS`, `PermissionType` enum, `ROLE_PERMISSIONS`, route registration, AppPreloader
+5. Register routes in `backend/app/api/v1/__init__.py` and `backend/app/main.py`
+6. Register models/schemas in their respective `__init__.py`
+7. Add i18n keys in BOTH `en.json` and `ar.json`
+8. Add navigation links in Header with `PermissionGate`
+9. Add preloads in AppPreloader
+10. Write tests for ALL layers
+
+### 20.2 Quality Review
+Every new feature MUST be reviewed against:
+- ALL rules in this document
+- ALL relevant skill files
+- Test coverage targets (§12)
+- Security requirements (§1)
+- Observability requirements (§10)
+- Performance requirements (§9)
+
+---
+
+*Last Updated: 2026-05-15*
+*Version: 3.2.0 — Added ALIGN councilor, HS256-only auth, frontend validation hardening, user-friendly naming, search validation, end-to-end field alignment rules.*

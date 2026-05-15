@@ -95,5 +95,7 @@ app.include_router({feature}_router, prefix="/api/v1")
 6. Always update `api/v1/__init__.py`, `schemas/__init__.py`, `main.py`, and `models/__init__.py` when adding new modules
 7. **Security, observability, testing are NON-NEGOTIABLE**
 8. Every new protected route MUST add RBAC dependency with a database-backed permission check
+9. **When a service method updates a resource ownership or assignment** (e.g., `assigned` field on a complaint), it MUST also create a notification for the assignee. The notification creation MUST be in the service method, not the route.
+10. **Every CRUD operation on a route MUST use its own dedicated permission** — `CREATE`, `READ`, `UPDATE`, `DELETE` must each have their own permission type. Never reuse one CRUD operation's permission for another (e.g., using `NOTIFICATION_UPDATE` for `DELETE`).
 9. **Dashboard aggregate queries** MUST use `execute_raw` with `reason="dashboard aggregate"` parameter — never bypass the raw SQL audit trail
 10. **All new UI strings MUST be bilingual** — add keys to BOTH `en.json` AND `ar.json`
