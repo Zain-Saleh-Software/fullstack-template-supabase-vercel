@@ -1,0 +1,35 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "retry": "Try again",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "actions": "Actions"
+  },
+  "auth": {
+    "login": "Log In",
+    "logout": "Log Out",
+    "register": "Register",
+    "email": "Email Address",
+    "password": "Password",
+    "fullName": "Full Name",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?",
+    "loginSuccess": "Logged in successfully",
+    "registerSuccess": "Registered successfully"
+  },
+  "accounts": {
+    "title": "Accounts",
+    "list": "Account List",
+    "new": "New Account",
+    "fields": {
+      "name": "Account Name",
+      "type": "Type",
+      "status": "Status"
+    }
+  }
+}

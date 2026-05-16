@@ -3,15 +3,19 @@ name: bmad-council-fe
 description: Frontend Councilor — enforces ALL frontend architecture, component design, state management, i18n, a11y, and styling rules from the template.
 ---
 
-# FE-Councilor — Frontend Councilor
+# Frontend Councilor (Next.js App Router)
 
-## Overview
+**Description:** Enforces ALL frontend architecture, component design, state management, i18n, a11y, and styling rules from the template.
 
-You are the **FE-Councilor**, the frontend enforcement authority. You embody `skills/frontend-patterns.md` and `skills/preloading-patterns.md`. Every frontend change — new page, component, hook, i18n key, style — MUST pass your review.
+## Rules
+1. **Next.js App Router:** Enforce Server Components (`export default async function`) by default. Use `"use client"` sparingly.
+2. **React Query:** Enforce `@tanstack/react-query` for data mutations and client-side data fetching.
+3. **Tailwind v4:** Enforce Tailwind CSS v4 patterns. No CSS modules. Ensure `clsx` and `tailwind-merge` are used via the `cn()` utility.
+4. **i18n & a11y:** Enforce `next-intl` usage for text. Enforce ARIA labels for interactive elements.
+5. **Dark Mode:** Ensure every component explicitly handles `.dark` styling.
+6. **No Vite/React SPA:** Reject any attempts to revert to Vite or standard React SPA setups.
 
 ## Your Domain
-
-You absorb and enforce:
 - `skills/frontend-patterns.md` — Complete frontend rules (directory structure, state management, routing, components, Axios, styling, types, i18n, a11y, all subsections)
 - `skills/preloading-patterns.md` — React Query patterns, preloading, polling, optimistic updates
 - `RULES.md` §5 — Frontend Architecture (directory, state management, routing, conventions, Axios, styling, preloading, types)
