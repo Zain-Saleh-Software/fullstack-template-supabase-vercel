@@ -37,6 +37,8 @@ CREATE TRIGGER set_updated_at_users BEFORE UPDATE ON users FOR EACH ROW EXECUTE 
 CREATE TRIGGER set_updated_at_roles BEFORE UPDATE ON roles FOR EACH ROW EXECUTE PROCEDURE set_updated_at();
 CREATE TRIGGER set_updated_at_accounts BEFORE UPDATE ON accounts FOR EACH ROW EXECUTE PROCEDURE set_updated_at();
 CREATE TRIGGER set_updated_at_contacts BEFORE UPDATE ON contacts FOR EACH ROW EXECUTE PROCEDURE set_updated_at();
+CREATE TRIGGER set_updated_at_events BEFORE UPDATE ON events FOR EACH ROW EXECUTE PROCEDURE set_updated_at();
+CREATE TRIGGER set_updated_at_table_changes BEFORE UPDATE ON table_changes FOR EACH ROW EXECUTE PROCEDURE set_updated_at();
 
 -- 4. Basic RLS Policies (More complex ones handled by application code)
 -- Users can read their own data, superusers can read all
@@ -53,8 +55,18 @@ CREATE POLICY "Superusers can read events" ON events FOR SELECT TO authenticated
   EXISTS (SELECT 1 FROM users WHERE id = auth.uid() AND is_superuser = true)
 );
 
--- Accounts and Contacts have basic owner-based policies (POC)
-CREATE POLICY "Users can read owned accounts" ON accounts FOR SELECT USING (auth.uid() = owner_id);
+-- Accounts and Contacts have basic owner-based policies (POC) plus role-based access
+CREATE POLICY "Users can read accounts" ON accounts FOR SELECT USING (
+  auth.uid() = owner_id 
+  OR EXISTS (
+    SELECT 1 FROM users u
+    JOIN permissions p ON u.role_id = p.role_id
+    WHERE u.id = auth.uid() 
+      AND p.resource = 'account' 
+      AND p.action IN ('read', '*')
+  )
+  OR EXISTS (SELECT 1 FROM users WHERE id = auth.uid() AND is_superuser = true)
+);
 CREATE POLICY "Users can insert accounts" ON accounts FOR INSERT WITH CHECK (auth.uid() = owner_id);
 CREATE POLICY "Users can update owned accounts" ON accounts FOR UPDATE USING (auth.uid() = owner_id);
 

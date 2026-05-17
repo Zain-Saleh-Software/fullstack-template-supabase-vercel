@@ -8,6 +8,8 @@ export const users = pgTable("users", {
   roleId: uuid("role_id").references(() => roles.id),
   isActive: boolean("is_active").default(true).notNull(),
   isSuperuser: boolean("is_superuser").default(false).notNull(),
+  isDeleted: boolean("is_deleted").default(false).notNull(),
+  deletedAt: timestamp("deleted_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });
@@ -17,6 +19,8 @@ export const roles = pgTable("roles", {
   name: text("name").notNull().unique(),
   description: text("description"),
   isSystem: boolean("is_system").default(false).notNull(),
+  isDeleted: boolean("is_deleted").default(false).notNull(),
+  deletedAt: timestamp("deleted_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });
@@ -37,14 +41,21 @@ export const events = pgTable("events", {
   actorId: uuid("actor_id").references(() => users.id, { onDelete: "set null" }),
   metadata: jsonb("metadata"),
   severity: text("severity").default("info").notNull(),
+  isDeleted: boolean("is_deleted").default(false).notNull(),
+  deletedAt: timestamp("deleted_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
 export const tableChanges = pgTable("table_changes", {
   id: uuid("id").defaultRandom().primaryKey(),
   tableName: text("table_name").notNull(),
   operation: text("operation").notNull(), // INSERT, UPDATE, DELETE
+  isDeleted: boolean("is_deleted").default(false).notNull(),
+  deletedAt: timestamp("deleted_at", { withTimezone: true }),
   changedAt: timestamp("changed_at", { withTimezone: true }).defaultNow().notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
 export const accounts = pgTable("accounts", {

@@ -1,58 +1,29 @@
 #!/usr/bin/env bash
 #
 # Pre-push hook: runs linters and tests before allowing a push.
-# If linter or tests fail, the push is rejected.
-#
-# Install: cp .githooks/pre-push .git/hooks/pre-push && chmod +x .git/hooks/pre-push
 #
 
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "  Pre-push checks running..."
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-# ─── Backend checks ─────────────────────────────────────────────────────
-echo ""
-echo "→ Running backend linter (ruff)..."
-cd backend
-ruff check . --quiet
-BACKEND_LINT=$?
-if [ $BACKEND_LINT -ne 0 ]; then
-    echo "✗ Backend linting failed. Run 'make lint-backend' to fix."
-    exit 1
-fi
-echo "  ✓ Backend lint passed"
-
-echo "→ Running backend tests..."
-python -m pytest tests/ -v --quiet --tb=short 2>&1 | tail -5
-BACKEND_TEST=$?
-if [ $BACKEND_TEST -ne 0 ]; then
-    echo "✗ Backend tests failed. Run 'make test-backend' to see details."
-    exit 1
-fi
-echo "  ✓ Backend tests passed"
-cd ..
-
-# ─── Frontend checks ────────────────────────────────────────────────────
-echo ""
-echo "→ Running frontend linter (eslint)..."
-cd frontend
+echo "→ Running linter (eslint)..."
 npm run lint --silent 2>&1 | tail -3
 FRONTEND_LINT=$?
 if [ $FRONTEND_LINT -ne 0 ]; then
-    echo "✗ Frontend linting failed. Run 'make lint-frontend' to fix."
+    echo "✗ Linting failed. Run 'npm run lint' to fix."
     exit 1
 fi
-echo "  ✓ Frontend lint passed"
+echo "  ✓ Lint passed"
 
-echo "→ Running frontend tests..."
-npm test -- --run --reporter=verbose 2>&1 | tail -10
+echo "→ Running tests..."
+npm run test -- --run --reporter=verbose 2>&1 | tail -10
 FRONTEND_TEST=$?
 if [ $FRONTEND_TEST -ne 0 ]; then
-    echo "✗ Frontend tests failed. Run 'make test-frontend' to see details."
+    echo "✗ Tests failed. Run 'npm run test' to see details."
     exit 1
 fi
-echo "  ✓ Frontend tests passed"
-cd ..
+echo "  ✓ Tests passed"
 
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"

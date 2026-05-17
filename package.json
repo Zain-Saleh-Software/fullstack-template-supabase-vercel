@@ -22,6 +22,7 @@
     "supabase:start": "npx supabase start",
     "supabase:stop": "npx supabase stop",
     "supabase:reset": "npx supabase db reset",
+    "setup": "bash scripts/init-local.sh",
     "validate-rules": "bash scripts/validate-rules.sh"
   },
   "dependencies": {

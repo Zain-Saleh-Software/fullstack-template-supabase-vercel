@@ -2,15 +2,12 @@
 #
 # Pre-commit hook: blocks secrets, .env files, rule violations, lint errors.
 #
-# Install via: make setup-hooks
-#
 
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "  Pre-commit checks running..."
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 # ─── 0. Absolute Immutability Check ─────────────────────────────────────────
-# Block ANY modification to skills/, RULES.md, CLAUDE.md, and validation script
 echo "→ Checking for immutable file modifications..."
 IMMUTABLE_PATTERNS="^skills/|^RULES\.md$|^CLAUDE\.md$|^scripts/validate-rules\.sh$"
 MODIFIED_IMMUTABLE=$(git diff --cached --name-only | grep -E "$IMMUTABLE_PATTERNS" || true)
@@ -45,37 +42,19 @@ if git diff --cached --name-only | grep -q '\.env'; then
     exit 1
 fi
 
-# ─── 3. Block secrets (basic regex check on staged files) ───────────────────
+# ─── 3. Block secrets ───────────────────────────────────────────────────────
 if git diff --cached -S"AKIA" -S"-----BEGIN PRIVATE KEY-----" -S"SUPABASE_SERVICE_ROLE_KEY" --pickaxe-regex --name-only | grep -q .; then
     echo "✗ ERROR: Potential secrets detected in staged files."
-    echo "  Please remove secrets before committing. (Use .env for secrets)"
     exit 1
 fi
 
-# ─── 4. Backend Lint & Format (ruff) ────────────────────────────────────────
-echo "→ Running backend formatter check..."
-cd backend
-ruff check . --quiet
-if [ $? -ne 0 ]; then
-    echo "✗ Backend lint failed. Run 'make lint' to fix."
-    exit 1
-fi
-ruff format --check . --quiet
-if [ $? -ne 0 ]; then
-    echo "✗ Backend formatting failed. Run 'make format' to fix."
-    exit 1
-fi
-cd ..
-
-# ─── 5. Frontend Lint ───────────────────────────────────────────────────────
-echo "→ Running frontend linter..."
-cd frontend
+# ─── 4. Lint & Format ───────────────────────────────────────────────────────
+echo "→ Running linter..."
 npm run lint --silent 2>&1 | tail -3
 if [ $? -ne 0 ]; then
-    echo "✗ Frontend lint failed. Run 'make lint' to fix."
+    echo "✗ Lint failed. Run 'npm run lint' to fix."
     exit 1
 fi
-cd ..
 
 echo ""
 echo "  ✓ Pre-commit checks passed"

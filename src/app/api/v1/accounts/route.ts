@@ -3,16 +3,10 @@ import { db } from "@/lib/db";
 import { accounts } from "@/lib/db/schema";
 import { requirePermission } from "@/lib/auth/rbac";
 import { apiError, getPaginationParams, paginatedResponse } from "@/lib/api/responses";
-import { z } from "zod";
 import { logger } from "@/lib/observability/logger";
 import { eq, desc, sql } from "drizzle-orm";
 import { createClient } from "@/lib/supabase/server";
-
-const createAccountSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  accountType: z.enum(["customer", "partner", "vendor"]).default("customer"),
-  status: z.enum(["active", "inactive", "archived"]).default("active"),
-});
+import { createAccountSchema } from "@/lib/validators/account";
 
 export async function GET(request: NextRequest) {
   try {

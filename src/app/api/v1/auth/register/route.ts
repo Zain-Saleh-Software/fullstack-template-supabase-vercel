@@ -1,14 +1,8 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { apiError } from "@/lib/api/responses";
-import { z } from "zod";
 import { logger } from "@/lib/observability/logger";
-
-const registerSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(8, "Password must be at least 8 characters long"),
-  fullName: z.string().min(2, "Full name is required"),
-});
+import { registerSchema } from "@/lib/validators/auth";
 
 export async function POST(request: Request) {
   try {
@@ -43,7 +37,6 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       user: data.user,
-      session: data.session,
     }, { status: 201 });
   } catch (error: Error | unknown) {
     logger.error("Registration route error", { error: error.message });

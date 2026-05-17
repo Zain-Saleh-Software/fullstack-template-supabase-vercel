@@ -1,13 +1,8 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { apiError } from "@/lib/api/responses";
-import { z } from "zod";
 import { logger } from "@/lib/observability/logger";
-
-const loginSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(1),
-});
+import { loginSchema } from "@/lib/validators/auth";
 
 export async function POST(request: Request) {
   try {
@@ -35,7 +30,6 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       user: data.user,
-      session: data.session,
     });
   } catch (error: Error | unknown) {
     logger.error("Login route error", { error: error.message });

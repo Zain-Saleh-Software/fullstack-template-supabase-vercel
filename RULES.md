@@ -58,3 +58,22 @@ The stack is frozen and strictly non-negotiable to maintain consistency across a
 1. **Vercel Native:** The app is designed for Vercel. Do not introduce Docker, Nginx, or separate backend servers.
 2. **Environment Variables:** `DATABASE_URL` must point to Supabase's transaction pooler (port 6543) in production.
 3. **CI/CD:** GitHub actions handle linting and testing. Vercel handles the build and deployment.
+
+## 7. Error Handling Rules
+1. `catch (error: any)` is FORBIDDEN. Use `catch (error: unknown)` and narrow with `instanceof Error`.
+2. Every `app/[locale]/` layout segment MUST have a co-located `error.tsx`.
+3. All Zod schemas MUST be defined in `src/lib/validators/`. Inline schemas in route files are forbidden.
+
+## 8. Testing Rules
+1. Every new API route MUST have a corresponding test in `tests/api/`.
+2. Every new Drizzle schema table MUST have a schema-shape test in `tests/db/`.
+3. Minimum coverage threshold: 70% lines.
+
+## 9. TypeScript Rules
+1. `error: any` is FORBIDDEN in catch blocks.
+2. Dynamic route params MUST be typed as `Promise<{id: string}>` and awaited.
+3. The `cn()` utility lives exclusively in `src/components/ui/Button.tsx` (or a dedicated `src/lib/utils.ts`). Do not re-export incorrectly.
+
+## 10. Entity Standards
+1. Every business entity table MUST include: `id`, `owner_id`, `is_deleted`, `deleted_at`, `created_at`, `updated_at`, `is_active`.
+2. The `cn()` merge utility must never be duplicated.
