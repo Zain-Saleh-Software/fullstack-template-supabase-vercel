@@ -1,21 +1,21 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { apiError } from "@/lib/api/responses";
 import { logger } from "@/lib/observability/logger";
+import { apiError } from "@/lib/api/responses";
 import { loginSchema } from "@/lib/validators/auth";
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const result = loginSchema.safeParse(body);
 
     if (!result.success) {
-      return apiError("Invalid credentials format", "VALIDATION_ERROR", 400, result.error.errors);
+      return apiError("Validation failed", "VALIDATION_ERROR", 400, result.error.errors);
     }
 
     const { email, password } = result.data;
-    const supabase = await createClient();
 
+    const supabase = await createClient();
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -31,8 +31,10 @@ export async function POST(request: Request) {
     return NextResponse.json({
       user: data.user,
     });
-  } catch (error: Error | unknown) {
-    logger.error("Login route error", { error: error.message });
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      logger.error("Login route error", { error: error.message });
+    }
     return apiError("Internal server error", "INTERNAL_ERROR", 500);
   }
 }

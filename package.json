@@ -20,10 +20,10 @@
     "db:studio": "drizzle-kit studio",
     "db:seed": "npx tsx src/lib/db/seed.ts",
     "supabase:start": "npx supabase start",
-    "supabase:stop": "npx supabase stop",
     "supabase:reset": "npx supabase db reset",
-    "setup": "bash scripts/init-local.sh",
-    "validate-rules": "bash scripts/validate-rules.sh"
+    "setup": "npx supabase start && npm run db:push && npx supabase db execute --file drizzle/0001_custom_rls_and_triggers.sql && npm run db:seed",
+    "validate-rules": "node scripts/validate-rules.js",
+    "smoke-test": "node scripts/smoke-test.js"
   },
   "dependencies": {
     "@fontsource/cairo": "^5.2.7",

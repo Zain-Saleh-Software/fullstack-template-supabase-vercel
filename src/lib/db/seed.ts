@@ -10,7 +10,7 @@ const supabaseAdmin = createClient(
 
 const ROLES = [
   { name: "Admin", permissions: ["*:*"] },
-  { name: "Manager", permissions: ["account:read", "account:create", "account:update", "contact:read", "contact:create", "contact:update", "user:read"] },
+  { name: "Manager", permissions: ["account:read", "account:create", "account:update", "account:delete", "contact:read", "contact:create", "contact:update", "contact:delete", "user:read"] },
   { name: "Employee", permissions: ["account:read", "contact:read"] },
 ];
 
@@ -44,7 +44,7 @@ async function seed() {
   const mockUsers = [
     { email: "admin@example.com", fullName: "Admin User", role: adminRole?.id, isSuperuser: true },
     { email: "manager@example.com", fullName: "Manager User", role: managerRole?.id, isSuperuser: false },
-    ...Array.from({ length: 98 }).map((_, i) => ({
+    ...Array.from({ length: 10 }).map((_, i) => ({
       email: `employee${i + 1}@example.com`,
       fullName: `Employee ${i + 1}`,
       role: employeeRole?.id,
@@ -69,10 +69,10 @@ async function seed() {
     if (authUser.user) {
       const [dbUser] = await db
         .update(users)
-        .set({ roleId: u.role, isSuperuser: u.isSuperuser })
+        .set({ roleId: u.role, isSuperuser: u.isSuperuser, fullName: u.fullName })
         .where(eq(users.id, authUser.user.id))
         .returning();
-      
+
       if (dbUser) dbUsers.push(dbUser);
     }
   }
@@ -80,22 +80,33 @@ async function seed() {
   // 3. Accounts & Contacts
   if (dbUsers.length > 0) {
     const ownerId = dbUsers[0].id;
-    for (let i = 0; i < 50; i++) {
+    // Realistic company names for demo
+    const companyNames = [
+      "Acme Corporation", "Globex Industries", "Initech Solutions", "Umbrella Corp",
+      "Wayne Enterprises", "Stark Industries", "Cyberdyne Systems", "Tyrell Corp",
+      "Wonka Industries", "Soylent Corp", "Massive Dynamic", "Hooli Ventures",
+      "Pied Piper Inc", "Dunder Mifflin", "Vandelay Industries", "Oceanic Airlines",
+      "Weyland-Yutani", "Buy n Large", "Genco Pura Olive Oil", "Kwik-E-Mart"
+    ];
+
+    for (let i = 0; i < Math.min(companyNames.length, 20); i++) {
       const [account] = await db
         .insert(accounts)
         .values({
-          name: `Company ${i + 1}`,
-          accountType: i % 5 === 0 ? "partner" : "customer",
-          ownerId,
+          name: companyNames[i],
+          accountType: i % 5 === 0 ? "partner" : i % 7 === 0 ? "vendor" : "customer",
+          ownerId: dbUsers[i % dbUsers.length].id,
         })
         .returning();
 
       if (account) {
-        await db.insert(contacts).values([
-          { accountId: account.id, firstName: "Alice", lastName: `Contact ${i}`, email: `alice${i}@example.com`, ownerId },
-          { accountId: account.id, firstName: "Bob", lastName: `Contact ${i}`, email: `bob${i}@example.com`, ownerId },
-          { accountId: account.id, firstName: "Charlie", lastName: `Contact ${i}`, email: `charlie${i}@example.com`, ownerId },
-        ]);
+        const contactsToInsert = [
+          { firstName: "Alice", lastName: `Smith`, email: `alice${i}@example.com`, ownerId },
+          { firstName: "Bob", lastName: `Jones`, email: `bob${i}@example.com`, ownerId },
+        ];
+        await db.insert(contacts).values(
+          contactsToInsert.map(c => ({ ...c, accountId: account.id }))
+        );
       }
     }
   }

@@ -1,0 +1,98 @@
+@import "tailwindcss";
+
+@theme {
+  /* Color Palette - Premium HSL tailored colors */
+  --color-primary-50: hsl(262, 80%, 97%);
+  --color-primary-100: hsl(262, 80%, 93%);
+  --color-primary-200: hsl(262, 83%, 87%);
+  --color-primary-300: hsl(262, 83%, 78%);
+  --color-primary-400: hsl(262, 89%, 68%);
+  --color-primary-500: hsl(262, 89%, 58%);
+  --color-primary-600: hsl(262, 89%, 52%);
+  --color-primary-700: hsl(262, 89%, 43%);
+  --color-primary-800: hsl(262, 89%, 36%);
+  --color-primary-900: hsl(262, 89%, 28%);
+  --color-primary-950: hsl(262, 89%, 12%);
+
+  /* Typography */
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-cairo: 'Cairo', system-ui, -apple-system, sans-serif;
+
+  /* Custom Animations */
+  --animate-fade-in: fade-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-slide-up: slide-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-float: float 6s ease-in-out infinite;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-10px) rotate(1deg); }
+}
+
+/* Global Styles */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  body {
+    @apply antialiased text-gray-900 bg-gray-50 dark:bg-gray-950 dark:text-gray-100 transition-colors duration-300;
+  }
+
+  /* Custom scrollbar for modern browsers */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-gray-300 dark:bg-gray-800 rounded-full hover:bg-gray-400 dark:hover:bg-gray-700 transition-colors;
+  }
+}
+
+/* Custom premium utilities */
+@layer utilities {
+  .glassmorphism {
+    @apply bg-white/70 dark:bg-gray-900/60 backdrop-blur-md border border-white/20 dark:border-gray-800/30;
+  }
+  
+  .glassmorphism-card {
+    @apply bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg border border-white/20 dark:border-gray-800/40 shadow-xl shadow-black/5 dark:shadow-black/10;
+  }
+
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-indigo-600 dark:from-primary-400 dark:to-indigo-400;
+  }
+  
+  .text-gradient-purple-amber {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-purple-600 via-pink-600 to-amber-500 dark:from-purple-400 dark:via-pink-400 dark:to-amber-300;
+  }
+
+  .bg-grid-pattern {
+    background-size: 40px 40px;
+    background-image: 
+      linear-gradient(to right, rgba(124, 58, 237, 0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(124, 58, 237, 0.05) 1px, transparent 1px);
+  }
+  
+  .dark .bg-grid-pattern {
+    background-image: 
+      linear-gradient(to right, rgba(124, 58, 237, 0.03) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(124, 58, 237, 0.03) 1px, transparent 1px);
+  }
+}

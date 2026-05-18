@@ -38,8 +38,10 @@ export async function POST(request: Request) {
     return NextResponse.json({
       user: data.user,
     }, { status: 201 });
-  } catch (error: Error | unknown) {
-    logger.error("Registration route error", { error: error.message });
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      logger.error("Registration route error", { error: error.message });
+    }
     return apiError("Internal server error", "INTERNAL_ERROR", 500);
   }
 }

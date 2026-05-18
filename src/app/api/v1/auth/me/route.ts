@@ -61,8 +61,10 @@ export async function GET() {
       }
     });
 
-  } catch (error: Error | unknown) {
-    logger.error("Auth me route error", { error: error.message });
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      logger.error("Auth me route error", { error: error.message });
+    }
     return apiError("Internal server error", "INTERNAL_ERROR", 500);
   }
 }

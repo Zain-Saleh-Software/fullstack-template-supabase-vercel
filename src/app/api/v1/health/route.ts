@@ -17,8 +17,8 @@ export async function GET() {
       },
       { status: 200 }
     );
-  } catch (error) {
-    logger.error("Health check failed", { error });
+  } catch (error: unknown) {
+    logger.error("Health check failed", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json(
       {
         status: "degraded",

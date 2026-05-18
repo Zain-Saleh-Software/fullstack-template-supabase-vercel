@@ -26,11 +26,13 @@ export async function GET(request: NextRequest) {
       .where(eq(accounts.isDeleted, false));
 
     return paginatedResponse(items, Number(count), limit, offset);
-  } catch (error: Error | unknown) {
-    if (error.message.includes("Forbidden")) {
-      return apiError("Forbidden", "FORBIDDEN", 403);
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      if (error.message.includes("Forbidden")) {
+        return apiError("Forbidden", "FORBIDDEN", 403);
+      }
+      logger.error("List accounts error", { error: error.message });
     }
-    logger.error("List accounts error", { error: error.message });
     return apiError("Internal server error", "INTERNAL_ERROR", 500);
   }
 }
@@ -62,11 +64,13 @@ export async function POST(request: NextRequest) {
       status: 201,
       headers: { "Content-Type": "application/json" }
     });
-  } catch (error: Error | unknown) {
-    if (error.message.includes("Forbidden")) {
-      return apiError("Forbidden", "FORBIDDEN", 403);
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      if (error.message.includes("Forbidden")) {
+        return apiError("Forbidden", "FORBIDDEN", 403);
+      }
+      logger.error("Create account error", { error: error.message });
     }
-    logger.error("Create account error", { error: error.message });
     return apiError("Internal server error", "INTERNAL_ERROR", 500);
   }
 }

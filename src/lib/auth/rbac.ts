@@ -1,6 +1,6 @@
 import { db } from "../db";
-import { roles, permissions, users } from "../db/schema";
-import { eq, and } from "drizzle-orm";
+import { permissions, users } from "../db/schema";
+import { eq } from "drizzle-orm";
 import { createClient } from "../supabase/server";
 
 export type PermissionType =

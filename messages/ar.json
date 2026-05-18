@@ -4,32 +4,79 @@
     "error": "حدث خطأ",
     "retry": "حاول مرة أخرى",
     "save": "حفظ",
+    "saving": "جاري الحفظ...",
     "cancel": "إلغاء",
     "delete": "حذف",
     "edit": "تعديل",
+    "update": "تحديث",
     "create": "إنشاء",
-    "actions": "الإجراءات"
+    "actions": "إجراءات"
   },
   "auth": {
     "login": "تسجيل الدخول",
     "logout": "تسجيل الخروج",
-    "register": "حساب جديد",
+    "register": "إنشاء حساب",
     "email": "البريد الإلكتروني",
     "password": "كلمة المرور",
     "fullName": "الاسم الكامل",
-    "noAccount": "لا تملك حساب؟",
+    "noAccount": "ليس لديك حساب؟",
     "hasAccount": "لديك حساب بالفعل؟",
     "loginSuccess": "تم تسجيل الدخول بنجاح",
-    "registerSuccess": "تم التسجيل بنجاح"
+    "registerSuccess": "تم إنشاء الحساب بنجاح"
   },
   "accounts": {
     "title": "الحسابات",
     "list": "قائمة الحسابات",
     "new": "حساب جديد",
+    "edit": "تعديل الحساب",
+    "actions": "إجراءات",
+    "count": "حساب موجود",
+    "empty": "لا توجد حسابات. قم بإنشاء أول حساب للبدء.",
+    "deleteConfirm": "هل أنت متأكد من حذف هذا الحساب؟",
     "fields": {
       "name": "اسم الحساب",
       "type": "النوع",
-      "status": "الحالة"
+      "status": "الحالة",
+      "created": "تاريخ الإنشاء"
     }
+  },
+  "contacts": {
+    "title": "جهات الاتصال",
+    "list": "قائمة جهات الاتصال",
+    "new": "جهة اتصال جديدة",
+    "edit": "تعديل جهة الاتصال",
+    "actions": "إجراءات",
+    "count": "جهة اتصال موجودة",
+    "empty": "لا توجد جهات اتصال. قم بإنشاء أول جهة اتصال للبدء.",
+    "selectAccount": "اختر حساباً",
+    "deleteConfirm": "هل أنت متأكد من حذف جهة الاتصال هذه؟",
+    "fields": {
+      "firstName": "الاسم",
+      "lastName": "اسم العائلة",
+      "email": "البريد الإلكتروني",
+      "phone": "الهاتف",
+      "jobTitle": "المسمى الوظيفي",
+      "account": "الحساب",
+      "isPrimary": "جهة الاتصال الأساسية لهذا الحساب"
+    }
+  },
+  "navigation": {
+    "dashboard": "لوحة التحكم",
+    "accounts": "الحسابات",
+    "contacts": "جهات الاتصال",
+    "settings": "الإعدادات",
+    "profile": "الملف الشخصي"
+  },
+  "dashboard": {
+    "title": "لوحة التحكم",
+    "welcome": "مرحباً بك في نظرة عامة على CRM",
+    "contacts": "جهات الاتصال",
+    "activeAccounts": "الحسابات النشطة",
+    "newThisMonth": "جديد هذا الشهر",
+    "quickActions": "إجراءات سريعة",
+    "newAccount": "حساب جديد",
+    "newContact": "جهة اتصال جديدة",
+    "recentActivity": "النشاط الأخير",
+    "activityComingSoon": "قريباً... تتبع النشاط"
   }
 }

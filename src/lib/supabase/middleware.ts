@@ -15,7 +15,7 @@ export async function updateSession(request: NextRequest) {
           return request.cookies.getAll();
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value));
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
           supabaseResponse = NextResponse.next({
             request,
           });
@@ -35,15 +35,20 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
+  const pathname = request.nextUrl.pathname;
+  const pathWithoutLocale = pathname.replace(/^\/(en|ar)(\/|$)/, "/");
+
   if (
     !user &&
-    !request.nextUrl.pathname.startsWith("/login") &&
-    !request.nextUrl.pathname.startsWith("/register") &&
-    !request.nextUrl.pathname.startsWith("/api/v1/auth")
+    !pathWithoutLocale.startsWith("/login") &&
+    !pathWithoutLocale.startsWith("/register") &&
+    !pathWithoutLocale.startsWith("/api/v1/auth")
   ) {
-    // no user, potentially respond by redirecting the user to the login page
+    // no user, potentially respond by redirecting the user to the login page preserving locale
     const url = request.nextUrl.clone();
-    url.pathname = "/login";
+    const localeMatch = pathname.match(/^\/(en|ar)(\/|$)/);
+    const localePrefix = localeMatch ? localeMatch[0] : "/";
+    url.pathname = `${localePrefix}login`.replace(/\/+/g, "/");
     return NextResponse.redirect(url);
   }
 

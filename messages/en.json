@@ -4,9 +4,11 @@
     "error": "An error occurred",
     "retry": "Try again",
     "save": "Save",
+    "saving": "Saving...",
     "cancel": "Cancel",
     "delete": "Delete",
     "edit": "Edit",
+    "update": "Update",
     "create": "Create",
     "actions": "Actions"
   },
@@ -26,10 +28,55 @@
     "title": "Accounts",
     "list": "Account List",
     "new": "New Account",
+    "edit": "Edit Account",
+    "actions": "Actions",
+    "count": "accounts found",
+    "empty": "No accounts found. Create your first account to get started.",
+    "deleteConfirm": "Are you sure you want to delete this account?",
     "fields": {
       "name": "Account Name",
       "type": "Type",
-      "status": "Status"
+      "status": "Status",
+      "created": "Created"
     }
+  },
+  "contacts": {
+    "title": "Contacts",
+    "list": "Contact List",
+    "new": "New Contact",
+    "edit": "Edit Contact",
+    "actions": "Actions",
+    "count": "contacts found",
+    "empty": "No contacts found. Create your first contact to get started.",
+    "selectAccount": "Select an account",
+    "deleteConfirm": "Are you sure you want to delete this contact?",
+    "fields": {
+      "firstName": "Name",
+      "lastName": "Last Name",
+      "email": "Email",
+      "phone": "Phone",
+      "jobTitle": "Job Title",
+      "account": "Account",
+      "isPrimary": "Primary contact for this account"
+    }
+  },
+  "navigation": {
+    "dashboard": "Dashboard",
+    "accounts": "Accounts",
+    "contacts": "Contacts",
+    "settings": "Settings",
+    "profile": "Profile"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome to your CRM overview",
+    "contacts": "Contacts",
+    "activeAccounts": "Active Accounts",
+    "newThisMonth": "New This Month",
+    "quickActions": "Quick Actions",
+    "newAccount": "New Account",
+    "newContact": "New Contact",
+    "recentActivity": "Recent Activity",
+    "activityComingSoon": "Activity tracking coming soon..."
   }
 }
