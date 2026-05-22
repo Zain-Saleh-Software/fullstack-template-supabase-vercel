@@ -2,15 +2,15 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ develop, main, master ]
   pull_request:
-    branches: [ main, master ]
+    branches: [ develop, main, master ]
 
 jobs:
   validate:
     name: Validation, Linting & Tests
     runs-on: ubuntu-latest
-    
+
     steps:
     - uses: actions/checkout@v4
 
@@ -26,25 +26,62 @@ jobs:
     - name: Validate Template Rules
       run: npm run validate-rules
 
-    - name: Lint & Typecheck
+    - name: Lint
       run: npm run lint
+
+    - name: TypeScript Type Check
+      run: npx tsc --noEmit
 
     - name: Run Tests
       run: npm run test
 
-  deploy:
-    name: Deploy to Vercel
+    - name: Check Test Coverage
+      run: npm run test:coverage -- --coverage.thresholds.global.lines 70
+
+  deploy-staging:
+    name: Deploy to Vercel (Staging)
     needs: validate
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
-    
+    if: github.ref == 'refs/heads/develop'
+
     steps:
     - uses: actions/checkout@v4
-    
-    - name: Deploy to Vercel
+
+    - name: Deploy to Vercel (Preview)
       uses: amondnet/vercel-action@v25
       with:
         vercel-token: ${{ secrets.VERCEL_TOKEN }}
         vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
         vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-        vercel-args: '--prod'
+        vercel-args: '--env DATABASE_URL=${{ secrets.DATABASE_URL_STAGING }}'
+
+  deploy-production:
+    name: Deploy to Vercel (Production)
+    needs: validate
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Deploy to Vercel (Production)
+      uses: amondnet/vercel-action@v25
+      with:
+        vercel-token: ${{ secrets.VERCEL_TOKEN }}
+        vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+        vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+        vercel-args: '--prod --env DATABASE_URL=${{ secrets.DATABASE_URL_PRODUCTION }}'
+
+    - name: Run Database Migrations
+      run: npx drizzle-kit push
+      env:
+        DATABASE_URL: ${{ secrets.DATABASE_URL_PRODUCTION }}
+
+    - name: Create Sentry Release
+      uses: getsentry/action-release@v1
+      env:
+        SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+        SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+        SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+      with:
+        environment: production

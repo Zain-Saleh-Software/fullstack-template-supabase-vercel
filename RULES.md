@@ -88,7 +88,7 @@ The stack is frozen and strictly non-negotiable to maintain consistency across a
 - Hardcoded permissions in code
 - Missing permission checks on API routes
 - Exposing sensitive data in client-side code
-- Storing secrets in environment variables without `NEXT_PUBLIC_` prefix in client components
+- Using server-only environment variables (without `NEXT_PUBLIC_` prefix) in client components — these will be `undefined` at runtime and may expose the missing variable name
 
 ## 5. Security & Observability
 
@@ -231,7 +231,74 @@ The stack is frozen and strictly non-negotiable to maintain consistency across a
 - Missing documentation
 - Inconsistent naming
 
-## 12. AI Agent Enforcement Rules
+## 12. i18n (Internationalization) Rules
+
+1. **Framework:** Use `next-intl` exclusively for all translations and locale routing.
+2. **Message Files:** Translations live in `messages/{locale}.json`. Every user-facing string must use translation keys.
+3. **Locale Routing:** URLs follow `/{locale}/path` pattern. Middleware handles locale detection and redirect.
+4. **Server Components:** Use `getTranslations` from `next-intl/server`.
+5. **Client Components:** Use `useTranslations` from `next-intl`.
+6. **RTL Support:** Arabic (`ar`) and other RTL locales must set `dir="rtl"` on the HTML element.
+7. **Default Locale:** English (`en`) is the default. All translation files must be kept in sync.
+
+### ❌ FORBIDDEN i18n Patterns
+- Hardcoded user-facing strings (must use translation keys)
+- Missing translations for any supported locale
+- Inconsistent key structures across locale files
+
+## 13. Accessibility (a11y) Rules
+
+1. **Semantic HTML:** Use proper semantic elements (`<nav>`, `<main>`, `<section>`, `<button>`, `<a>`).
+2. **ARIA Labels:** All interactive elements must have accessible names (aria-label, aria-labelledby).
+3. **Keyboard Navigation:** All interactive elements must be keyboard accessible (focusable, activatable).
+4. **Focus Management:** Manage focus for modals, dialogs, and route changes.
+5. **Color Contrast:** Text must meet WCAG AA contrast ratios (4.5:1 for normal text, 3:1 for large text).
+6. **Form Labels:** Every form input must have an associated `<label>` element.
+7. **Images:** All images must have descriptive `alt` text.
+8. **Screen Reader Support:** Use `sr-only` utility for visually hidden but accessible content.
+
+### ❌ FORBIDDEN a11y Patterns
+- Non-semantic `<div>` as buttons without proper ARIA roles
+- Missing form labels
+- Empty or missing `alt` attributes on images
+- Focus traps without escape mechanisms
+
+## 14. Performance Rules
+
+1. **Server Components:** Fetch data in Server Components to avoid client-side waterfalls.
+2. **Bundle Size:** Minimize client bundle — only import what's needed in `"use client"` components.
+3. **Image Optimization:** Use `next/image` for all images with proper `width`, `height`, and `priority` attributes.
+4. **Code Splitting:** Use dynamic imports (`next/dynamic`) for heavy client components not needed immediately.
+5. **Caching:** Leverage Next.js data cache (`unstable_cache` or `fetch` options) for expensive queries.
+6. **Database:** Ensure proper indexes on frequently queried columns; avoid N+1 queries.
+7. **Font Loading:** Use `next/font` or `@fontsource` with proper `display: swap` for font loading.
+
+### ❌ FORBIDDEN Performance Patterns
+- Large client bundles due to unnecessary `"use client"` directives
+- Missing image optimization (width, height, lazy loading)
+- Blocking render with synchronous data fetching in Client Components
+- Missing database indexes on queried columns
+
+## 15. Component Architecture Rules
+
+1. **Atomic Structure:** Organize components by complexity:
+   - `src/components/ui/` — Primitives (Button, Input, Card, Modal, Badge)
+   - `src/components/forms/` — Form components (FormField, FormSelect, FormInput)
+   - `src/components/layout/` — Layout components (Sidebar, Header, MainContent)
+   - `src/components/[feature]/` — Feature-specific components (AccountTable, UserProfile)
+2. **Composition over Configuration:** Favor component composition (children, slots) over config objects.
+3. **Single Responsibility:** Each component does one thing. Extract sub-components when logic grows.
+4. **Server/Client Separation:** Keep data-fetching Server Components separate from interactive Client Components. Pass data down as props.
+5. **Reusability:** Extract shared patterns into `src/components/ui/` primitives.
+6. **Error Boundaries:** Wrap interactive sections in individual error boundaries (not just layout-level).
+
+### ❌ FORBIDDEN Component Patterns
+- God components (>300 lines) that render entire pages
+- Mixing data fetching and interactivity in the same component without clear separation
+- Duplicating UI primitives across feature components
+- Business logic inside presentational components
+
+## 16. AI Agent Enforcement Rules
 
 When an AI agent (Claude, etc.) works on this template, it MUST:
 

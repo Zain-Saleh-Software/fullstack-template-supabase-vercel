@@ -1,5 +1,25 @@
 const http = require("http");
 
+/**
+ * RUNTIME SMOKE TEST — POC MODE
+ *
+ * This script tests the template's POC authentication and permission flows
+ * using the demo entities (accounts, contacts). It validates that:
+ *   - Registration, login, and logout work correctly
+ *   - Admin users (with roles) can perform CRUD operations
+ *   - Unauthorized users get 403 responses
+ *   - Unauthenticated users are denied access
+ *
+ * AFTER BOOTSTRAP (when POC code is removed and real entities are built):
+ *   - Update all API endpoints below to match your project's entities
+ *   - Update permission checks to your project's permission taxonomy
+ *   - Update test data (names, emails, entity types) to match your domain
+ *   - This script serves as a template for your own runtime smoke tests
+ *
+ * Keep the structural pattern (auth flow, permission testing, CRUD testing)
+ * but replace POC entity references with your own.
+ */
+
 const BASE_URL = "http://localhost:3000";
 let adminCookie = "";
 let employeeCookie = "";

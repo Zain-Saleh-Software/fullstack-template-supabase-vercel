@@ -1,12 +1,33 @@
 #!/usr/bin/env bash
 #
-# Pre-push hook: runs linters and tests before allowing a push.
+# Pre-push hook: blocks pushes to main, runs linters, type checks, and tests.
 #
 
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "  Pre-push checks running..."
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
+# ─── 0. Block pushes to main/master ────────────────────────────────────────
+BRANCH=$(git symbolic-ref HEAD 2>/dev/null | sed 's|refs/heads/||')
+if [ "$BRANCH" = "main" ] || [ "$BRANCH" = "master" ]; then
+    echo "✗ DIRECT PUSHES TO $BRANCH ARE BLOCKED."
+    echo "  Create a feature branch and open a PR into $BRANCH instead."
+    exit 1
+fi
+
+echo "→ Branch '$BRANCH' is allowed for pushing."
+
+# ─── 1. TypeScript Type Check ───────────────────────────────────────────────
+echo "→ Running TypeScript type check..."
+npx tsc --noEmit 2>&1 | tail -20
+FRONTEND_TYPECHECK=$?
+if [ $FRONTEND_TYPECHECK -ne 0 ]; then
+    echo "✗ TypeScript type check failed."
+    exit 1
+fi
+echo "  ✓ TypeScript check passed"
+
+# ─── 2. Lint ────────────────────────────────────────────────────────────────
 echo "→ Running linter (eslint)..."
 npm run lint --silent 2>&1 | tail -3
 FRONTEND_LINT=$?
@@ -16,6 +37,7 @@ if [ $FRONTEND_LINT -ne 0 ]; then
 fi
 echo "  ✓ Lint passed"
 
+# ─── 3. Tests ───────────────────────────────────────────────────────────────
 echo "→ Running tests..."
 npm run test -- --run --reporter=verbose 2>&1 | tail -10
 FRONTEND_TEST=$?

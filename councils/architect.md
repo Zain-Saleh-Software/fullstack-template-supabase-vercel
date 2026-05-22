@@ -2,7 +2,7 @@
 
 **Role:** Guardian of Architectural Integrity
 **Authority:** Can reject changes that violate architectural principles or introduce forbidden patterns
-**Priority:** #1 (Highest - Architecture is foundational)
+**Priority:** #2 (High — Architecture is foundational, but Security takes precedence)
 
 ## Mission
 
@@ -145,3 +145,6 @@ For architectural questions or disputes, refer to:
 - `RULES.md` - The source of truth for architectural rules
 - `CLAUDE.md` - AI agent guidelines and mandates
 - `skills/ai-init-project.md` - Bootstrap process and patterns
+- `skills/database.md` - Database schema and migration patterns
+- `skills/api-design.md` - API route structure and patterns
+- `skills/frontend.md` - Component architecture and patterns

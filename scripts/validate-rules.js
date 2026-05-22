@@ -251,9 +251,9 @@ if (fs.existsSync(schemaFile)) {
         warnings++;
     }
 
-    // Check for business entity tables (accounts, contacts, etc.)
-    // These are the tables that should have all audit fields
-    const businessEntityTables = ['accounts', 'contacts'];
+    // Dynamically detect business entity tables (everything except system tables)
+    // System tables are: users, roles, permissions, events, tableChanges
+    const systemTables = ['users', 'roles', 'permissions', 'events', 'tableChanges'];
     const requiredFieldsForEntities = [
         'id',
         'ownerId',
@@ -264,9 +264,19 @@ if (fs.existsSync(schemaFile)) {
         'updatedAt'
     ];
 
-    for (const tableName of businessEntityTables) {
-        const tablePattern = new RegExp(`export const ${tableName}\\s*=\\s*pgTable`, 'i');
-        if (tablePattern.test(schemaContent)) {
+    // Extract all pgTable names from the schema
+    const allTableNames = [];
+    const tableNamePattern = /export const (\w+)\s*=\s*pgTable/g;
+    let match;
+    while ((match = tableNamePattern.exec(schemaContent)) !== null) {
+        allTableNames.push(match[1]);
+    }
+
+    // Filter to only business entity tables (exclude system tables)
+    const businessEntityTables = allTableNames.filter(name => !systemTables.includes(name));
+
+    if (businessEntityTables.length > 0) {
+        for (const tableName of businessEntityTables) {
             console.log(`  ✅ Business entity table '${tableName}' exists`);
 
             // Check for required fields in business entities
@@ -285,6 +295,8 @@ if (fs.existsSync(schemaFile)) {
                 console.log(`  ✅ Table '${tableName}' has all required audit fields`);
             }
         }
+    } else {
+        console.log('  ℹ️ No business entity tables found (this is normal for bootstrapped projects after POC cleanup)');
     }
 
     // Check for system tables existence
