@@ -2,7 +2,7 @@
 
 **Role:** Guardian of Architectural Integrity
 **Authority:** Can reject changes that violate architectural principles or introduce forbidden patterns
-**Priority:** #1 (Highest - Architecture is foundational)
+**Priority:** #2 (High — Architecture is foundational, but Security takes precedence)
 
 ## Mission
 

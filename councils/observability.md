@@ -2,7 +2,7 @@
 
 **Role:** Guardian of Logging, Error Tracking, and Monitoring
 **Authority:** Can reject changes that lack proper observability or error handling
-**Priority:** #3 (High - Essential for production reliability)
+**Priority:** #3 (High — Essential for production reliability; Security and Architecture take precedence)
 
 ## Mission
 

@@ -2,7 +2,7 @@
 
 **Role:** Guardian of Code Quality and Maintainability
 **Authority:** Can reject changes with quality issues or insufficient testing
-**Priority:** #2 (High - Quality ensures long-term maintainability)
+**Priority:** #3 (High — Quality ensures long-term maintainability; Security, Architecture, and Testing take precedence)
 
 ## Mission
 

@@ -173,65 +173,17 @@ The template comes with POC entities (`accounts`, `contacts`). You must replace 
 
 ## PHASE 7: POC CODE CLEANUP (FINAL PURGE)
 
-**This is mandatory.** The template's POC code must be completely removed once new project code is in place. 
+**This is mandatory.** The template's POC code must be completely removed once new project code is in place.
 
-### What to Remove (POC code ONLY):
+> **Full cleanup instructions:** See `skills/poc-cleanup.md` for the exhaustive cleanup checklist, what to remove, what never to touch, and post-cleanup validation steps.
 
-1. **Database Layer:**
-   - Remove POC entity tables (`accounts`, `contacts` or any template demo tables) from `src/lib/db/schema/index.ts`
-   - Remove any POC seed data from `src/lib/db/seed.ts`
-   - Remove POC migration files in `drizzle/` that only relate to POC entities (keep infrastructure migrations)
+### Quick Summary
 
-2. **API Layer:**
-   - Remove `src/app/api/v1/accounts/` directory entirely
-   - Remove `src/app/api/v1/contacts/` directory entirely (if exists)
-   - Remove any other POC/demo API routes under `src/app/api/v1/`
-
-3. **Validator Layer:**
-   - Remove `src/lib/validators/account.ts`
-   - Remove `src/lib/validators/contact.ts` (if exists)
-   - Remove any other POC validator files
-
-4. **Frontend Pages:**
-   - Remove POC pages under `src/app/[locale]/dashboard/accounts/`
-   - Remove POC pages under `src/app/[locale]/dashboard/contacts/`
-   - Remove any other POC/demo pages
-   - Remove POC SVGs from `src/components/icons/` or `public/` that were template demos
-
-5. **Components:**
-   - Remove POC components that exist only as template demos
-   - Remove POC React Query hooks tied to accounts/contacts
-
-6. **Tests:**
-   - Remove all test files for accounts/contacts
-   - Remove any other POC test files
-
-### What to NEVER Touch:
-   - `.agents/` directory — ALL contents (skills, councils, agents)
-   - `.claude/` directory — ALL contents (skills, agents)
-   - `CLAUDE.md` — NEVER modify or delete
-   - `RULES.md` — NEVER modify or delete
-   - Any `.md` or `.toml` file in `.agents/` or `.claude/` — NEVER touch
-   - Any AI configuration, skill definition, council rule, or agent persona
-
-### What EVOLVES with the Project:
-   - `skills/` directory — Skill files grow and improve as patterns are refined
-   - `councils/` directory — Council checklists adapt as the project matures
-   - Changes to skills/councils must be deliberate, documented, and reviewed
+The POC entities (`accounts`, `contacts`) and all related code (pages, API routes, validators, components, tests, migrations, SVGs) must be completely removed. The `.agents/`, `.claude/`, `CLAUDE.md`, and `RULES.md` files are immutable and must never be touched.
 
 ### ✅ Phase 7 Validation
-- [ ] All POC database entities removed (schema, seed, migrations)
-- [ ] All POC API routes removed
-- [ ] All POC validators removed
-- [ ] All POC frontend pages removed
-- [ ] All POC components removed
-- [ ] All POC SVGs and demo assets removed
-- [ ] All POC test files removed
-- [ ] `.agents/` directory completely untouched
-- [ ] `.claude/` directory completely untouched
-- [ ] `CLAUDE.md` untouched
-- [ ] `RULES.md` untouched
-- [ ] `skills/` directory untouched
+- [ ] All POC code removed per `skills/poc-cleanup.md` checklist
+- [ ] All immutable files untouched (`.agents/`, `.claude/`, `CLAUDE.md`, `RULES.md`)
 - [ ] `npm run lint` passes after cleanup
 - [ ] `npm run build` succeeds after cleanup
 - [ ] `npm run test` passes after cleanup

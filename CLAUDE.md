@@ -38,14 +38,22 @@ Before writing code in any domain, consult the relevant skill file. These explai
 | Domain | Skill File | Use When |
 |--------|-----------|----------|
 | Bootstrap | `skills/ai-init-project.md` | Starting a new project from this template |
+| POC Cleanup | `skills/poc-cleanup.md` | Removing demo code after real project code is in place |
 | Database & ORM | `skills/database.md` | Defining schemas, migrations, queries, RLS |
 | API Design | `skills/api-design.md` | Creating or modifying API route handlers |
 | Auth & RBAC | `skills/auth-rbac.md` | Authentication, permissions, middleware |
 | Frontend | `skills/frontend.md` | Components, Tailwind v4, dark mode, state |
 | Testing | `skills/testing.md` | Unit, integration, and E2E tests |
 | Observability | `skills/observability.md` | Logging, Sentry, error boundaries |
+| Error Handling | `skills/error-handling.md` | Error boundaries, API errors, logging errors |
 | Environment | `skills/environment.md` | Env vars, secrets, `.env` management |
 | i18n | `skills/i18n.md` | Translations, locale routing, next-intl |
+| TypeScript | `skills/typescript.md` | Type guards, generics, Zod inference, strict patterns |
+| Code Quality | `skills/code-quality.md` | Naming, file/function limits, imports, JSDoc, DRY |
+| Accessibility | `skills/accessibility.md` | Semantic HTML, ARIA, keyboard nav, WCAG AA |
+| SEO & Metadata | `skills/seo-metadata.md` | Metadata API, OG images, sitemaps, structured data |
+| Deployment | `skills/deployment.md` | Vercel setup, CI/CD, env vars, Supabase production |
+| GitHub Workflow | `skills/github-workflow.md` | Branch strategy, conventional commits, PRs, git hooks |
 
 ---
 
@@ -60,9 +68,14 @@ Every significant change must pass a council review. Councils live in `councils/
 | **Lead** | `councils/lead.md` | Orchestrates all councils; start here for large changes |
 | **Architect** | `councils/architect.md` | Any structural change, new files, new dependencies |
 | **Security** | `councils/security.md` | Any API route, auth change, data access, user input |
+| **Database** | `councils/database.md` | Schema changes, migrations, RLS, indexes |
+| **API Design** | `councils/api-design.md` | API routes, response formats, validation, pagination |
+| **Testing** | `councils/testing.md` | Test coverage, test structure, flaky tests |
 | **Quality** | `councils/quality.md` | Any code change (always runs) |
+| **Frontend** | `councils/frontend.md` | UI components, a11y, i18n, dark mode, performance |
 | **Deployment** | `councils/deployment.md` | Env vars, migrations, build changes, CI/CD |
 | **Observability** | `councils/observability.md` | Logging, error handling, Sentry integration |
+| **GitHub** | `councils/github.md` | Branch compliance, commit messages, git hooks |
 
 **Rule:** A council can BLOCK a commit. If any council raises a blocker, fix it before proceeding.
 
@@ -129,6 +142,7 @@ You MUST NEVER:
 - ❌ Forget to ask the user about GitHub sync
 - ❌ Write code without consulting the relevant skill file first
 - ❌ Modify files in `.agents/`, `.claude/`, `CLAUDE.md`, or `RULES.md` — these are permanent infrastructure
+- ❌ Leave POC code in place after real project code exists — always run POC cleanup per `skills/poc-cleanup.md`
 - ℹ️ `skills/` and `councils/` ARE evolvable — refine them as the project matures, but changes must be deliberate and documented
 
 ---
@@ -138,7 +152,7 @@ You MUST NEVER:
 Run mentally before every commit (the git hooks enforce these mechanically):
 
 ### Code
-- [ ] No `console.log()` — use `logger` from `src/lib/observability/logger.ts`
+- [ ] No `console.log()` in production code — use `logger` from `src/lib/observability/logger.ts`
 - [ ] No `any` types — use `unknown` with type guards
 - [ ] No inline Zod schemas — all schemas in `src/lib/validators/`
 - [ ] No hard deletes — use `is_deleted = true`
@@ -157,6 +171,12 @@ Run mentally before every commit (the git hooks enforce these mechanically):
 - [ ] All user input validated with Zod
 - [ ] No secrets in client-side code (no non-`NEXT_PUBLIC_` vars in `"use client"` files)
 - [ ] RLS policies exist for all new tables
+
+### Accessibility
+- [ ] Semantic HTML used appropriately
+- [ ] All interactive elements have ARIA labels
+- [ ] Form inputs have associated labels
+- [ ] Color contrast meets WCAG AA
 
 ### Testing
 - [ ] New API routes have tests in `tests/api/`

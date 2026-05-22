@@ -39,6 +39,9 @@ Ensure that every code change maintains the highest security standards, protects
 - **Rate Limiting:** Check for rate limiting on sensitive endpoints
 - **IDOR Prevention:** Ensure users can only access their own data (owner_id checks)
 - **Mass Assignment:** Verify only allowed fields can be updated via API
+- **CSRF Protection:** Verify state-changing operations (POST/PATCH/DELETE) are protected; Supabase Auth handles this via token-based auth
+- **XSS Prevention:** Ensure user-generated content is sanitized before rendering; React's JSX escaping handles most cases, but verify `dangerouslySetInnerHTML` is never used with unsanitized input
+- **Open Redirect:** Verify redirect URLs are validated (no user-controlled redirects to external domains)
 
 ## Review Checklist
 
