@@ -9,7 +9,8 @@ This template ships with **POC (Proof of Concept) code** — demo pages, sample 
 
 **THE RULE:** After ALL your new project code is in place (entities, pages, APIs, tests), you MUST:
 - ✅ **REMOVE** all POC code: demo pages, sample entities, template API routes, POC SVGs, POC tables, POC logic — everything that was only there to demonstrate the template.
-- 🚫 **NEVER TOUCH** `.agents/`, `.claude/`, `CLAUDE.md`, `RULES.md`, `skills/`, or any AI rules, skills, councils, or agent configuration. These are **permanent infrastructure** — they stay intact forever.
+- 🚫 **NEVER TOUCH** `.agents/`, `.claude/`, `CLAUDE.md`, `RULES.md`, or any agent configuration in `.agents/` or `.claude/`. These are **permanent infrastructure** — they stay intact forever.
+- ℹ️ **EVOLVE** `skills/` and `councils/` as the project grows — these are project infrastructure that evolves with your needs, but changes should be deliberate and documented.
 
 The POC code serves its purpose the moment the new project has working code. After that, it becomes noise and must be eliminated. See **PHASE 7** for the full cleanup checklist.
 
@@ -210,9 +211,13 @@ The template comes with POC entities (`accounts`, `contacts`). You must replace 
    - `.claude/` directory — ALL contents (skills, agents)
    - `CLAUDE.md` — NEVER modify or delete
    - `RULES.md` — NEVER modify or delete
-   - `skills/` directory — NEVER modify or delete
    - Any `.md` or `.toml` file in `.agents/` or `.claude/` — NEVER touch
    - Any AI configuration, skill definition, council rule, or agent persona
+
+### What EVOLVES with the Project:
+   - `skills/` directory — Skill files grow and improve as patterns are refined
+   - `councils/` directory — Council checklists adapt as the project matures
+   - Changes to skills/councils must be deliberate, documented, and reviewed
 
 ### ✅ Phase 7 Validation
 - [ ] All POC database entities removed (schema, seed, migrations)

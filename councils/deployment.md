@@ -218,6 +218,9 @@ DATABASE_URL=localhost:5432/mydb  # Wrong port, not using pooler
 For deployment questions or concerns, refer to:
 - `RULES.md` - Deployment rules and requirements
 - `CLAUDE.md` - Deployment checklists and guidelines
+- `skills/environment.md` - Environment variable management
+- `skills/observability.md` - Sentry and monitoring configuration
+- `councils/observability.md` - Observability review checklist
 - Vercel Documentation - Platform-specific guidance
 - Supabase Documentation - Database and auth guidance
 

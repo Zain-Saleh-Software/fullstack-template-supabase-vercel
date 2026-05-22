@@ -190,6 +190,9 @@ export async function POST(request: NextRequest) {
 For security questions or concerns, refer to:
 - `RULES.md` - Security rules and requirements
 - `CLAUDE.md` - Security checklists and mandates
+- `skills/auth-rbac.md` - Auth and RBAC patterns
+- `skills/environment.md` - Environment variable security
+- `skills/observability.md` - Error handling and logging
 - OWASP Top 10 - General security best practices
 
 ## Emergency Protocol

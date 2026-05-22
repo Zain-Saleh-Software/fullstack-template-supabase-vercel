@@ -36,6 +36,8 @@ Ensure that every code change maintains high standards of code quality, testabil
 - **Edge cases:** Check that edge cases are covered
 - **Test naming:** Verify descriptive test names
 - **No flaky tests:** Ensure tests are reliable and don't depend on timing
+- **Test types:** Unit tests for functions, integration tests for API routes, schema shape tests for DB tables
+- **Test locations:** API tests in `tests/api/`, schema tests in `tests/db/`
 
 ### 5. Documentation
 - **JSDoc comments:** Verify public functions have proper documentation
@@ -227,6 +229,8 @@ export async function POST(request: NextRequest) {
 For quality questions or standards, refer to:
 - `RULES.md` - Quality rules and standards
 - `CLAUDE.md` - Quality checklists and guidelines
+- `skills/testing.md` - Test patterns and coverage requirements
+- `skills/frontend.md` - Component quality standards
 - TypeScript Handbook - Type safety best practices
 
 ## Quality Automation
