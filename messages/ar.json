@@ -22,7 +22,8 @@
     "noAccount": "ليس لديك حساب؟",
     "hasAccount": "لديك حساب بالفعل؟",
     "loginSuccess": "تم تسجيل الدخول بنجاح",
-    "registerSuccess": "تم إنشاء الحساب بنجاح"
+    "registerSuccess": "تم إنشاء الحساب بنجاح",
+    "loading": "جاري التحميل..."
   },
   "accounts": {
     "title": "الحسابات",

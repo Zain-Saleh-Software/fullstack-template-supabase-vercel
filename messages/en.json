@@ -22,7 +22,8 @@
     "noAccount": "Don't have an account?",
     "hasAccount": "Already have an account?",
     "loginSuccess": "Logged in successfully",
-    "registerSuccess": "Registered successfully"
+    "registerSuccess": "Registered successfully",
+    "loading": "Loading..."
   },
   "accounts": {
     "title": "Accounts",

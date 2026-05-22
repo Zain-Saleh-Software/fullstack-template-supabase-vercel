@@ -1,3 +1,6 @@
+import { config } from "dotenv";
+import path from "path";
+config({ path: path.resolve(process.cwd(), ".env.local") });
 import { db } from "./index";
 import { roles, permissions, users, accounts, contacts } from "./schema";
 import { createClient } from "@supabase/supabase-js";

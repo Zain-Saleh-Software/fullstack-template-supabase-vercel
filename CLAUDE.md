@@ -15,6 +15,10 @@
 
 4. **Component Modification:** When modifying UI components, always ensure Tailwind v4 best practices, dark mode support (`dark:` classes), and LTR/RTL responsiveness are maintained.
 
+5. **GitHub Sync (IMMUTABLE — NEVER SKIP):** After EVERY single prompt — without exception — you MUST ask the user if they want to push the latest changes to GitHub. If yes, stage all (`git add -A`), commit with a conventional commit message, and push. **ALWAYS push to the `develop` branch — NEVER `main`.** This is the FINAL step of every interaction. The `bmad-github-sync` skill governs this behavior. Never skip, never forget, never make it optional by default. **This rule applies to every prompt. Always.**
+
+6. **Branch Policy (IMMUTABLE):** `develop` is the primary branch for all work. ALWAYS push to and pull from `develop` — NEVER `main`. Auto-create `develop` locally and remotely if it doesn't exist. The only exception: initial template bootstrap pulls from `main` once, then immediately creates `develop` and switches to it. Before ANY git operation, ensure you are on `develop`. This overrides any default branch behavior in git.
+
 ## AI Council System
 
 Before making any significant changes, you MUST simulate the following council reviews:
@@ -118,6 +122,12 @@ Before committing any code, you MUST verify:
 - [ ] No TypeScript errors
 - [ ] No ESLint warnings
 - [ ] All councils approve changes
+
+### GitHub Sync
+- [ ] User prompted to push latest changes to GitHub
+- [ ] If accepted: staged, committed with conventional commit, pushed to `develop`
+- [ ] Verified on `develop` branch before commit/push
+- [ ] This is the ABSOLUTE FINAL step — nothing comes after it
 
 ## Self-Review Process
 

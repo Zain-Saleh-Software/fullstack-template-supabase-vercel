@@ -12,9 +12,14 @@ ALTER TABLE contacts ENABLE ROW LEVEL SECURITY;
 -- 2. Auth Sync Trigger (Sync auth.users to public.users)
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS trigger AS $$
+DECLARE
+  default_role_id uuid;
 BEGIN
-  INSERT INTO public.users (id, email, full_name, avatar_url)
-  VALUES (new.id, new.email, new.raw_user_meta_data->>'full_name', new.raw_user_meta_data->>'avatar_url');
+  -- Assign default Employee role to new registered users
+  SELECT id INTO default_role_id FROM public.roles WHERE name = 'Employee' LIMIT 1;
+
+  INSERT INTO public.users (id, email, full_name, avatar_url, role_id)
+  VALUES (new.id, new.email, new.raw_user_meta_data->>'full_name', new.raw_user_meta_data->>'avatar_url', default_role_id);
   RETURN new;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
@@ -33,11 +38,17 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS set_updated_at_users ON users;
 CREATE TRIGGER set_updated_at_users BEFORE UPDATE ON users FOR EACH ROW EXECUTE PROCEDURE set_updated_at();
+DROP TRIGGER IF EXISTS set_updated_at_roles ON roles;
 CREATE TRIGGER set_updated_at_roles BEFORE UPDATE ON roles FOR EACH ROW EXECUTE PROCEDURE set_updated_at();
+DROP TRIGGER IF EXISTS set_updated_at_accounts ON accounts;
 CREATE TRIGGER set_updated_at_accounts BEFORE UPDATE ON accounts FOR EACH ROW EXECUTE PROCEDURE set_updated_at();
+DROP TRIGGER IF EXISTS set_updated_at_contacts ON contacts;
 CREATE TRIGGER set_updated_at_contacts BEFORE UPDATE ON contacts FOR EACH ROW EXECUTE PROCEDURE set_updated_at();
+DROP TRIGGER IF EXISTS set_updated_at_events ON events;
 CREATE TRIGGER set_updated_at_events BEFORE UPDATE ON events FOR EACH ROW EXECUTE PROCEDURE set_updated_at();
+DROP TRIGGER IF EXISTS set_updated_at_table_changes ON table_changes;
 CREATE TRIGGER set_updated_at_table_changes BEFORE UPDATE ON table_changes FOR EACH ROW EXECUTE PROCEDURE set_updated_at();
 
 -- 4. Basic RLS Policies (More complex ones handled by application code)
@@ -84,5 +95,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
+DROP TRIGGER IF EXISTS notify_accounts_change ON accounts;
 CREATE TRIGGER notify_accounts_change AFTER INSERT OR UPDATE OR DELETE ON accounts FOR EACH STATEMENT EXECUTE PROCEDURE notify_table_change();
+DROP TRIGGER IF EXISTS notify_contacts_change ON contacts;
 CREATE TRIGGER notify_contacts_change AFTER INSERT OR UPDATE OR DELETE ON contacts FOR EACH STATEMENT EXECUTE PROCEDURE notify_table_change();

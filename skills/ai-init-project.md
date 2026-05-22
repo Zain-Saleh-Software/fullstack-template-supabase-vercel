@@ -3,6 +3,18 @@
 **Description:** Step-by-step instructions for bootstrapping a new project from this template.
 **Role:** The Architect
 
+## CRITICAL: POC CLEANUP Mandate (DO NOT SKIP)
+
+This template ships with **POC (Proof of Concept) code** — demo pages, sample API routes, placeholder entities (`accounts`, `contacts`), SVGs, tables, and POC logic. These exist ONLY to guide the AI on where to add your new project's code. They are scaffolding, nothing more.
+
+**THE RULE:** After ALL your new project code is in place (entities, pages, APIs, tests), you MUST:
+- ✅ **REMOVE** all POC code: demo pages, sample entities, template API routes, POC SVGs, POC tables, POC logic — everything that was only there to demonstrate the template.
+- 🚫 **NEVER TOUCH** `.agents/`, `.claude/`, `CLAUDE.md`, `RULES.md`, `skills/`, or any AI rules, skills, councils, or agent configuration. These are **permanent infrastructure** — they stay intact forever.
+
+The POC code serves its purpose the moment the new project has working code. After that, it becomes noise and must be eliminated. See **PHASE 7** for the full cleanup checklist.
+
+---
+
 ## PRE-REQUISITES: UNDERSTAND THE ARCHITECTURE
 Before starting, read `RULES.md` and `CLAUDE.md`. You must understand that this template uses **Next.js 15 App Router, Supabase (Database/Auth), Drizzle ORM, and Tailwind v4**. 
 **DO NOT use Docker, FastAPI, Python, Redis, or Nginx.**
@@ -53,11 +65,14 @@ Before starting, read `RULES.md` and `CLAUDE.md`. You must understand that this 
 The template comes with POC entities (`accounts`, `contacts`). You must replace them with the user's actual business domain.
 
 1. **Ask the User:** *"What are the core business entities for your CRM/HR application? (e.g., Candidates, Invoices, Properties, Patients)"*
-2. **Delete the POCs:** 
+2. **Delete POC Entities (aggressively):** 
    - Remove `accounts` and `contacts` from `src/lib/db/schema/index.ts`.
-   - Remove the `src/app/api/v1/accounts` API routes.
-   - Remove the `src/lib/validators/account.ts` file.
-   - Remove any tests related to accounts/contacts.
+   - Remove `src/app/api/v1/accounts/` entirely (all route files).
+   - Remove `src/lib/validators/account.ts` and `src/lib/validators/contact.ts` if they exist.
+   - Remove all test files referencing accounts/contacts.
+   - Remove any POC frontend pages for accounts/contacts under `src/app/[locale]/dashboard/`.
+   - Remove any POC React Query hooks tied to accounts/contacts.
+   - Remove any POC seed data for accounts/contacts from `src/lib/db/seed.ts`.
 3. **Create New Entities:**
    - Define new Drizzle `pgTable` definitions in `src/lib/db/schema/index.ts`.
    - **CRITICAL:** Ensure every new table includes: `id` (uuid), `owner_id` (uuid), `is_deleted` (boolean), `deleted_at` (timestamp), `created_at` (timestamp), `updated_at` (timestamp), `is_active` (boolean).
@@ -155,6 +170,69 @@ The template comes with POC entities (`accounts`, `contacts`). You must replace 
 
 ---
 
+## PHASE 7: POC CODE CLEANUP (FINAL PURGE)
+
+**This is mandatory.** The template's POC code must be completely removed once new project code is in place. 
+
+### What to Remove (POC code ONLY):
+
+1. **Database Layer:**
+   - Remove POC entity tables (`accounts`, `contacts` or any template demo tables) from `src/lib/db/schema/index.ts`
+   - Remove any POC seed data from `src/lib/db/seed.ts`
+   - Remove POC migration files in `drizzle/` that only relate to POC entities (keep infrastructure migrations)
+
+2. **API Layer:**
+   - Remove `src/app/api/v1/accounts/` directory entirely
+   - Remove `src/app/api/v1/contacts/` directory entirely (if exists)
+   - Remove any other POC/demo API routes under `src/app/api/v1/`
+
+3. **Validator Layer:**
+   - Remove `src/lib/validators/account.ts`
+   - Remove `src/lib/validators/contact.ts` (if exists)
+   - Remove any other POC validator files
+
+4. **Frontend Pages:**
+   - Remove POC pages under `src/app/[locale]/dashboard/accounts/`
+   - Remove POC pages under `src/app/[locale]/dashboard/contacts/`
+   - Remove any other POC/demo pages
+   - Remove POC SVGs from `src/components/icons/` or `public/` that were template demos
+
+5. **Components:**
+   - Remove POC components that exist only as template demos
+   - Remove POC React Query hooks tied to accounts/contacts
+
+6. **Tests:**
+   - Remove all test files for accounts/contacts
+   - Remove any other POC test files
+
+### What to NEVER Touch:
+   - `.agents/` directory — ALL contents (skills, councils, agents)
+   - `.claude/` directory — ALL contents (skills, agents)
+   - `CLAUDE.md` — NEVER modify or delete
+   - `RULES.md` — NEVER modify or delete
+   - `skills/` directory — NEVER modify or delete
+   - Any `.md` or `.toml` file in `.agents/` or `.claude/` — NEVER touch
+   - Any AI configuration, skill definition, council rule, or agent persona
+
+### ✅ Phase 7 Validation
+- [ ] All POC database entities removed (schema, seed, migrations)
+- [ ] All POC API routes removed
+- [ ] All POC validators removed
+- [ ] All POC frontend pages removed
+- [ ] All POC components removed
+- [ ] All POC SVGs and demo assets removed
+- [ ] All POC test files removed
+- [ ] `.agents/` directory completely untouched
+- [ ] `.claude/` directory completely untouched
+- [ ] `CLAUDE.md` untouched
+- [ ] `RULES.md` untouched
+- [ ] `skills/` directory untouched
+- [ ] `npm run lint` passes after cleanup
+- [ ] `npm run build` succeeds after cleanup
+- [ ] `npm run test` passes after cleanup
+
+---
+
 ## POST-BOOTSTRAP VALIDATION
 
 After completing all phases, run this comprehensive validation:
@@ -201,7 +279,7 @@ After completing all phases, run this comprehensive validation:
 
 Before declaring the bootstrap complete, verify:
 
-- [ ] All 6 phases completed successfully
+- [ ] All 7 phases completed successfully
 - [ ] All validation checklists passed
 - [ ] Application builds without errors
 - [ ] All tests pass
@@ -243,7 +321,7 @@ If issues arise during bootstrap:
 
 ---
 
-**CONCLUSION:** Once all phases are complete and all validations pass, inform the user the bootstrap process is successful and the project is ready for feature development. Provide them with:
+**CONCLUSION:** Once all 7 phases are complete (including the POC code purge) and all validations pass, inform the user the bootstrap process is successful and the project is ready for feature development. Provide them with:
 - A summary of what was created
 - Key files and directories to understand
 - Next steps for continued development

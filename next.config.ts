@@ -3,6 +3,14 @@ import createNextIntlPlugin from "next-intl/plugin";
 
 const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+const supabaseWsUrl = supabaseUrl.replace(/^http/, "ws");
+
+const connectSrc = `connect-src 'self' https://*.supabase.co wss://*.supabase.co${supabaseUrl ? ` ${supabaseUrl} ${supabaseWsUrl}` : ""}`;
+const imgSrc = `img-src 'self' data: blob: https:${supabaseUrl ? ` ${supabaseUrl}` : ""}`;
+
+const cspValue = `default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; ${imgSrc}; font-src 'self' data:; ${connectSrc}; frame-ancestors 'none'`;
+
 const nextConfig: NextConfig = {
   // Security headers applied to all routes
   async headers() {
@@ -19,8 +27,7 @@ const nextConfig: NextConfig = {
           },
           {
             key: "Content-Security-Policy",
-            value:
-              "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https://*.supabase.co wss://*.supabase.co; frame-ancestors 'none'",
+            value: cspValue,
           },
         ],
       },

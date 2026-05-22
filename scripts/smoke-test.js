@@ -80,7 +80,7 @@ function verifyProjectStructure() {
         "src/lib/supabase/server.ts",
         "src/lib/supabase/browser.ts",
         "src/lib/supabase/middleware.ts",
-        "src/middleware.ts",
+        "src/proxy.ts",
         // Components
         "src/components/ui/Button.tsx",
         "src/components/ui/Input.tsx",
@@ -142,10 +142,10 @@ function verifyTranslations() {
  * Verify middleware has proper auth protection
  */
 function verifyMiddleware() {
-    console.log(`\n🛡️ Checking Middleware Configuration...`);
+    console.log(`\n🛡️ Checking Proxy/Middleware Configuration...`);
     try {
-        const middleware = require("fs").readFileSync(
-            path.resolve(__dirname, "..", "src/middleware.ts"),
+        const proxy = require("fs").readFileSync(
+            path.resolve(__dirname, "..", "src/proxy.ts"),
             "utf8"
         );
         const supabaseMiddleware = require("fs").readFileSync(
@@ -153,17 +153,17 @@ function verifyMiddleware() {
             "utf8"
         );
         const checks = [
-            middleware.includes("updateSession"),
-            middleware.includes("next-intl"),
+            proxy.includes("updateSession"),
+            proxy.includes("next-intl"),
             supabaseMiddleware.includes("/login"),
             supabaseMiddleware.includes("/register"),
-            middleware.includes("locale"),
+            proxy.includes("locales"),
         ];
         const allPassed = checks.every(Boolean);
-        console.log(allPassed ? `  ✅ Middleware properly configured` : `  ❌ Middleware checks failed`);
+        console.log(allPassed ? `  ✅ Proxy/Middleware properly configured` : `  ❌ Proxy/Middleware checks failed`);
         return allPassed;
     } catch (err) {
-        console.error(`  ❌ Could not read middleware: ${err.message}`);
+        console.error(`  ❌ Could not read proxy/middleware: ${err.message}`);
         return false;
     }
 }
