@@ -82,13 +82,9 @@ After orchestration, produce a summary:
 **Decision:** Approved pending test additions and logging improvements.
 ```
 
-## Integration with BMAD Skills
+## Project Councils
 
-The BMAD agent skills in `.agents/skills/bmad-council-*/` provide detailed review PROCEDURES (step-by-step review workflows). The project councils in `councils/` define the CHECKLISTS (what to verify). When performing a review:
-
-1. Consult the relevant project council(s) for WHAT to check
-2. Use the BMAD council skill(s) for HOW to perform the review
-3. The Lead Council orchestrates both levels
+The project councils in `councils/` define the CHECKLISTS (what to verify). When performing a review, consult the relevant council for the domain-specific criteria to validate against.
 
 ## Escalation
 
@@ -103,4 +99,3 @@ For orchestration questions, refer to:
 - `CLAUDE.md` — AI agent mandates and three-persona system
 - `RULES.md` — The ultimate source of truth for all rules
 - Individual council files — Detailed checklists per domain
-- BMAD council skills in `.agents/skills/bmad-council-*/` — Review procedures
