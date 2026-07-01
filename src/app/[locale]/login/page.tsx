@@ -1,3 +1,10 @@
+// POC - PLACEHOLDER AUTH UI
+// REMOVE OR REPLACE WHEN BUILDING YOUR REAL PROJECT
+// This is a minimal login form. Customize branding, layout,
+// OAuth providers, and error handling for your project.
+// The auth flow infrastructure (Supabase sign-in, session check)
+// is production-ready and should be preserved.
+
 "use client";
 
 import { useState, useEffect } from "react";

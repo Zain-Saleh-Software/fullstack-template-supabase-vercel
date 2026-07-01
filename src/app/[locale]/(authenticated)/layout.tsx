@@ -16,6 +16,7 @@ import {
     UserCircle,
 } from "lucide-react";
 
+// POC NAV ITEMS - REPLACE WITH YOUR PROJECT'S NAVIGATION
 const NAV_ITEMS = [
     { href: "/dashboard", labelKey: "dashboard", icon: LayoutDashboard, permission: null as string | null },
     { href: "/accounts", labelKey: "accounts", icon: Building2, permission: "account:read" },
@@ -80,6 +81,7 @@ export default function AuthenticatedLayout({
                     <div className="rounded-lg bg-gradient-to-tr from-primary-600 to-indigo-600 p-2 text-white">
                         <Building2 className="h-5 w-5" />
                     </div>
+                    {/* POC BRANDING - REPLACE WITH YOUR PROJECT'S NAME */}
                     <span className="text-lg font-bold text-gray-900 dark:text-white">
                         VibeCRM
                     </span>

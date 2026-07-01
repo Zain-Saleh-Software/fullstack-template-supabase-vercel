@@ -26,6 +26,7 @@
     "loading": "Loading..."
   },
   "accounts": {
+    "_comment_poc": "THIS ENTIRE SECTION IS POC - REMOVE WHEN BUILDING YOUR REAL PROJECT",
     "title": "Accounts",
     "list": "Account List",
     "new": "New Account",
@@ -42,6 +43,7 @@
     }
   },
   "contacts": {
+    "_comment_poc": "THIS ENTIRE SECTION IS POC - REMOVE WHEN BUILDING YOUR REAL PROJECT",
     "title": "Contacts",
     "list": "Contact List",
     "new": "New Contact",
@@ -62,6 +64,7 @@
     }
   },
   "navigation": {
+    "_comment_poc": "THIS ENTIRE SECTION IS POC - REMOVE WHEN BUILDING YOUR REAL PROJECT",
     "dashboard": "Dashboard",
     "accounts": "Accounts",
     "contacts": "Contacts",
@@ -69,6 +72,7 @@
     "profile": "Profile"
   },
   "dashboard": {
+    "_comment_poc": "THIS ENTIRE SECTION IS POC - REMOVE WHEN BUILDING YOUR REAL PROJECT",
     "title": "Dashboard",
     "welcome": "Welcome to your CRM overview",
     "contacts": "Contacts",

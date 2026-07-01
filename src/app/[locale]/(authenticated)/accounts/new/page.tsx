@@ -1,3 +1,9 @@
+// ============================================================
+// POC - ENTIRE FILE IS PLACEHOLDER CODE
+// REMOVE OR REPLACE WHEN BUILDING YOUR REAL PROJECT
+// This is a demo "create account" page for "VibeCRM".
+// ============================================================
+
 import { getTranslations } from "next-intl/server";
 import { AccountForm } from "@/components/forms/account-form";
 

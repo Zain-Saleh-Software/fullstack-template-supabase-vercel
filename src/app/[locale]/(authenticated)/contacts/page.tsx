@@ -1,3 +1,9 @@
+// ============================================================
+// POC - ENTIRE FILE IS PLACEHOLDER CODE
+// REMOVE OR REPLACE WHEN BUILDING YOUR REAL PROJECT
+// This is a demo contacts list page for "VibeCRM".
+// ============================================================
+
 import { createClient } from "@/lib/supabase/server";
 import { db } from "@/lib/db";
 import { contacts, accounts } from "@/lib/db/schema";

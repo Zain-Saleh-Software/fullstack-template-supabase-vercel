@@ -6,6 +6,11 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 
+// ============================================================
+// POC - ENTIRE FILE IS PLACEHOLDER CODE
+// REMOVE OR REPLACE WHEN BUILDING YOUR REAL PROJECT
+// ============================================================
+
 interface AccountFormProps {
     initialData?: {
         id?: string;

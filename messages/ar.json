@@ -26,6 +26,7 @@
     "loading": "جاري التحميل..."
   },
   "accounts": {
+    "_comment_poc": "THIS ENTIRE SECTION IS POC - REMOVE WHEN BUILDING YOUR REAL PROJECT",
     "title": "الحسابات",
     "list": "قائمة الحسابات",
     "new": "حساب جديد",
@@ -42,6 +43,7 @@
     }
   },
   "contacts": {
+    "_comment_poc": "THIS ENTIRE SECTION IS POC - REMOVE WHEN BUILDING YOUR REAL PROJECT",
     "title": "جهات الاتصال",
     "list": "قائمة جهات الاتصال",
     "new": "جهة اتصال جديدة",
@@ -62,6 +64,7 @@
     }
   },
   "navigation": {
+    "_comment_poc": "THIS ENTIRE SECTION IS POC - REMOVE WHEN BUILDING YOUR REAL PROJECT",
     "dashboard": "لوحة التحكم",
     "accounts": "الحسابات",
     "contacts": "جهات الاتصال",
@@ -69,6 +72,7 @@
     "profile": "الملف الشخصي"
   },
   "dashboard": {
+    "_comment_poc": "THIS ENTIRE SECTION IS POC - REMOVE WHEN BUILDING YOUR REAL PROJECT",
     "title": "لوحة التحكم",
     "welcome": "مرحباً بك في نظرة عامة على CRM",
     "contacts": "جهات الاتصال",

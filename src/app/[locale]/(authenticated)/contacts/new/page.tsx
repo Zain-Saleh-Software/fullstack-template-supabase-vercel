@@ -1,3 +1,9 @@
+// ============================================================
+// POC - ENTIRE FILE IS PLACEHOLDER CODE
+// REMOVE OR REPLACE WHEN BUILDING YOUR REAL PROJECT
+// This is a demo "create contact" page for "VibeCRM".
+// ============================================================
+
 import { getTranslations } from "next-intl/server";
 import { ContactForm } from "@/components/forms/contact-form";
 

@@ -1,3 +1,8 @@
+// ============================================================
+// POC - ENTIRE FILE IS PLACEHOLDER CODE
+// REMOVE OR REPLACE WHEN BUILDING YOUR REAL PROJECT
+// This file demonstrates the pattern for database seeding.
+// ============================================================
 import { config } from "dotenv";
 import path from "path";
 config({ path: path.resolve(process.cwd(), ".env.local") });
