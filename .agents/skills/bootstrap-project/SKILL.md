@@ -15,9 +15,15 @@ Before writing any code:
 
 1. Accept the source — a local path, git URL, project description, or PRD.
 2. Produce a comprehensive inventory: tech stack, databases, APIs, frontend pages, auth system, env vars, business logic.
-3. Map every source entity, permission, and route to the corresponding template patterns.
-4. Rename the project from `fullstack-template` to the source project name across all relevant files.
-5. Present the migration plan to the user — entities, routes, pages, data volume, risks, strategy. **Get explicit approval before proceeding.**
+3. **Credential discovery:** Scan the source project for existing credentials, connection strings, API keys, and environment variable files (`.env`, `.env.local`, `.env.production`, `vercel.json`, `supabase/config.toml`, etc.). Identify:
+   - Vercel project IDs, org IDs, tokens
+   - Supabase project refs, access tokens, anon/service role keys, database URLs
+   - Third-party API keys (Stripe, Resend, Sentry, etc.)
+   - Any other integration credentials found in the source
+4. **Check user-provided credentials:** If the user included credentials or connection info in their initial prompt, incorporate those and note which are already covered.
+5. Map every source entity, permission, and route to the corresponding template patterns.
+6. Rename the project from `fullstack-template` to the source project name across all relevant files.
+7. Present the migration plan to the user — entities, routes, pages, data volume, risks, strategy, and a summary of credentials found vs. still needed. **Get explicit approval before proceeding.**
 
 ---
 
@@ -127,12 +133,34 @@ Before writing any code:
 > **Skills:** `deployment.md`  
 > **Councils:** Deployment Council, GitHub Council
 
-- Set up Vercel project — connect repo, configure env vars, deploy preview.
-- Set up production Supabase — apply migrations, data migration, RLS, auth config.
-- Deploy to production via PR from `develop` → `main`.
-- Run post-deployment smoke tests.
+**CRITICAL RULE: NEVER create new infrastructure.** Connect to the user's EXISTING Vercel project, Supabase project, and third-party services. Do NOT provision new databases, new Vercel projects, or new Supabase instances. If credentials for an existing service are missing, ask the user.
 
-**Validate:** Production URL loads. Auth works. APIs respond.
+### Credential Resolution Strategy (in priority order)
+
+1. **Source project discovery (Phase 0):** Use credentials found by scanning the source project's `.env` files, config files, and code. These were already identified during discovery.
+2. **User-provided in initial prompt:** Use any credentials or connection info the user gave when starting the bootstrap. These take precedence over discovered credentials.
+3. **Ask the user now:** If any required credential is still missing when this phase begins, **stop and ask the user**. List exactly what's needed and why.
+
+### What to Ask For (if missing)
+
+| Service | Required Credentials | Where to Find Them |
+|---------|---------------------|-------------------|
+| **Vercel** | `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` | [Vercel Account Settings → Tokens](https://vercel.com/account/tokens) and Project Settings |
+| **Supabase** | `SUPABASE_ACCESS_TOKEN`, Supabase Project Ref (`SUPABASE_PROJECT_ID`), Database URL (`DATABASE_URL`), Anon Key (`NEXT_PUBLIC_SUPABASE_ANON_KEY`), Service Role Key (`SUPABASE_SERVICE_ROLE_KEY`) | [Supabase Dashboard → Project Settings → API](https://supabase.com/dashboard) and [Access Tokens](https://supabase.com/dashboard/account/tokens) |
+| **Sentry** | `SENTRY_AUTH_TOKEN`, `NEXT_PUBLIC_SENTRY_DSN`, `SENTRY_ORG`, `SENTRY_PROJECT` | [Sentry Settings → API Keys](https://sentry.io/settings/account/api/auth-tokens/) and Project Settings |
+| **Stripe** | `STRIPE_SECRET_KEY`, `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`, Stripe Webhook Secret | Stripe Dashboard → Developers → API Keys |
+| **Resend** | `RESEND_API_KEY` | Resend Dashboard → API Keys |
+| **Other** | Any additional keys the source project used | Per-service documentation |
+
+### Deployment Steps
+
+- **Connect to existing Vercel project** using the provided/collected `VERCEL_TOKEN`, org ID, and project ID. Configure all environment variables from the collected set. Do NOT create a new project.
+- **Connect to existing Supabase project** using the provided/collected `SUPABASE_ACCESS_TOKEN` and project ref. Apply migrations, data migration, RLS policies, and auth configuration to the existing project. Do NOT create a new project.
+- Push code to the connected repository.
+- Deploy via existing Vercel pipeline.
+- Run post-deployment smoke tests against the existing production URL.
+
+**Validate:** Production URL loads. Auth works against existing Supabase project. All APIs respond. All third-party integrations functional.
 
 ---
 
