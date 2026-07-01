@@ -53,13 +53,13 @@ This template is designed to be used by an AI Agent (Claude Code, Cursor, etc.) 
    ```
 
 2. **Run the bootstrap workflow:**
-   Open the project in your AI agent (Claude Code, Cursor, etc.) and say:
+   Open the project in your AI agent (Claude Code, Cursor, etc.). **Your first prompt MUST begin with `/bootstrap-project`** to load the bootstrap workflow skill. For example:
 
-   > "Bootstrap a new project from this template."
+   > `/bootstrap-project Bootstrap a new project from this template.`
 
-   The agent will guide you through the process. You can also provide a source project to migrate:
+   The agent will load the full migration workflow and guide you through the process. You can also provide a source project to migrate:
 
-   > "Bootstrap a new project. Migrate everything from [repo URL / local path / project description] into this template."
+   > `/bootstrap-project Migrate everything from [repo URL / local path / project description] into this template.`
 
 3. **Customize with your own instructions:**
    You can layer on any additional requirements:
@@ -99,7 +99,7 @@ To let the agent deploy everything live immediately, provide these credentials i
 
 Example prompt with credentials:
 
-> "Bootstrap this project. My existing project is at github.com/me/my-app. Connect to Vercel using token vrt_xxx, org ID yyy, and deploy to production. Use Supabase project ref zzz with access token sbp_aaa. Also integrate Stripe with key sk_test_bbb."
+> `/bootstrap-project My existing project is at github.com/me/my-app. Connect to Vercel using token vrt_xxx, org ID yyy, and deploy to production. Use Supabase project ref zzz with access token sbp_aaa. Also integrate Stripe with key sk_test_bbb.`
 
 ### After Bootstrapping
 
