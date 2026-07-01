@@ -1,3 +1,8 @@
+// ============================================================
+// POC - ENTIRE FILE IS PLACEHOLDER CODE
+// REMOVE OR REPLACE WHEN BUILDING YOUR REAL PROJECT
+// ============================================================
+
 import { describe, it, expect, vi } from 'vitest';
 import { db } from '@/lib/db';
 

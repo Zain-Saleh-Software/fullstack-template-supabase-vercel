@@ -13,12 +13,12 @@ export type PermissionType =
   | "user:delete"
   | "role:read"
   | "role:write"
-  // Accounts (POC)
+  // POC PERMISSIONS - REMOVE WHEN BUILDING YOUR REAL PROJECT
   | "account:read"
   | "account:create"
   | "account:update"
   | "account:delete"
-  // Contacts (POC)
+  // POC PERMISSIONS - REMOVE WHEN BUILDING YOUR REAL PROJECT
   | "contact:read"
   | "contact:create"
   | "contact:update"

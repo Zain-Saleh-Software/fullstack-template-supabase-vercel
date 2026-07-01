@@ -81,11 +81,13 @@ describe('Database Schema Validation', () => {
             table: Record<string, unknown>;
             expectedAuditFields: string[];
         }> = [
+                // POC - REMOVE THIS ENTRY WHEN BUILDING YOUR REAL PROJECT
                 {
                     name: 'accounts',
                     table: schema.accounts as unknown as Record<string, unknown>,
                     expectedAuditFields: ['id', 'ownerId', 'isActive', 'isDeleted', 'deletedAt', 'createdAt', 'updatedAt'],
                 },
+                // POC - REMOVE THIS ENTRY WHEN BUILDING YOUR REAL PROJECT
                 {
                     name: 'contacts',
                     table: schema.contacts as unknown as Record<string, unknown>,

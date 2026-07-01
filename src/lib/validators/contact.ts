@@ -1,3 +1,8 @@
+// ============================================================
+// POC - ENTIRE FILE IS PLACEHOLDER CODE
+// REMOVE OR REPLACE WHEN BUILDING YOUR REAL PROJECT
+// This file demonstrates the pattern for Zod validation schemas.
+// ============================================================
 import { z } from "zod";
 
 export const createContactSchema = z.object({

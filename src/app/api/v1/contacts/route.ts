@@ -1,3 +1,9 @@
+// ============================================================
+// POC - ENTIRE FILE IS PLACEHOLDER CODE
+// REMOVE OR REPLACE WHEN BUILDING YOUR REAL PROJECT
+// This file demonstrates the pattern for a RESTful API route
+// with GET (list, filterable by accountId) and POST (create) operations.
+// ============================================================
 import { type NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { contacts } from "@/lib/db/schema";

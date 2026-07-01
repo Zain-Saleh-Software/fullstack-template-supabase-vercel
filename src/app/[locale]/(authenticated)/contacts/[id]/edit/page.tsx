@@ -1,3 +1,9 @@
+// ============================================================
+// POC - ENTIRE FILE IS PLACEHOLDER CODE
+// REMOVE OR REPLACE WHEN BUILDING YOUR REAL PROJECT
+// This is a demo "edit contact" page for "VibeCRM".
+// ============================================================
+
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { contacts } from "@/lib/db/schema";

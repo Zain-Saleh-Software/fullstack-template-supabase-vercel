@@ -61,6 +61,7 @@ export const tableChanges = pgTable("table_changes", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
+// POC TABLE - REMOVE WHEN BUILDING YOUR REAL PROJECT
 export const accounts = pgTable("accounts", {
   id: uuid("id").defaultRandom().primaryKey(),
   name: text("name").notNull(),
@@ -74,6 +75,7 @@ export const accounts = pgTable("accounts", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
+// POC TABLE - REMOVE WHEN BUILDING YOUR REAL PROJECT
 export const contacts = pgTable("contacts", {
   id: uuid("id").defaultRandom().primaryKey(),
   accountId: uuid("account_id").references(() => accounts.id, { onDelete: "cascade" }),

@@ -1,3 +1,11 @@
+// ============================================================
+// POC - ENTIRE FILE IS PLACEHOLDER CODE
+// REMOVE OR REPLACE WHEN BUILDING YOUR REAL PROJECT
+// This is a demo landing page ("VibeCRM") showing Tailwind v4
+// styling patterns, animations, and marketing layout.
+// Your real project should replace this with your own landing page.
+// ============================================================
+
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/routing";
 import { 

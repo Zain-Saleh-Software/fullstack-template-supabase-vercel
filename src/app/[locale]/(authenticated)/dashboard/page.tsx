@@ -1,3 +1,10 @@
+// ============================================================
+// POC - ENTIRE FILE IS PLACEHOLDER CODE
+// REMOVE OR REPLACE WHEN BUILDING YOUR REAL PROJECT
+// This is a demo dashboard page for "VibeCRM" with hardcoded
+// stat cards, quick actions, and a recent activity section.
+// ============================================================
+
 import { createClient } from "@/lib/supabase/server";
 import { db } from "@/lib/db";
 import { accounts, contacts } from "@/lib/db/schema";
@@ -7,6 +14,7 @@ import { Link } from "@/i18n/routing";
 import { Building2, Users, TrendingUp, Activity } from "lucide-react";
 import { logger } from "@/lib/observability/logger";
 
+// POC DATA FETCHING - REPLACE WITH YOUR PROJECT'S DASHBOARD QUERIES
 async function getStats() {
     try {
         const supabase = await createClient();
@@ -63,6 +71,7 @@ async function getStats() {
     }
 }
 
+// POC COMPONENT - REPLACE WITH YOUR PROJECT'S DASHBOARD WIDGETS
 function StatCard({
     title,
     value,
@@ -135,6 +144,7 @@ export default async function DashboardPage() {
                     />
                 </div>
 
+                {/* POC DEMO SECTIONS - REPLACE WITH YOUR PROJECT'S CONTENT */}
                 <div className="mt-8 grid gap-6 lg:grid-cols-2">
                     <div className="rounded-lg bg-white p-6 shadow dark:bg-gray-800">
                         <h2 className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">
@@ -156,6 +166,7 @@ export default async function DashboardPage() {
                         </div>
                     </div>
 
+                    {/* POC - Recent Activity section */}
                     <div className="rounded-lg bg-white p-6 shadow dark:bg-gray-800">
                         <h2 className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">
                             {t("recentActivity")}
